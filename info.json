@@ -1,0 +1,9 @@
+{
+	"name": "cutscene-creator",
+	"version": "0.0.6",
+	"title": "Cutscene Creator",
+	"description": "Adds a command to create custom cutscenes",
+	"author": "asher_sky",
+	"dependencies": ["base >= 1.0.0"],
+	"factorio_version": "1.0"
+}
