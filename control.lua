@@ -1,6 +1,6 @@
 
 script.on_load()
-  commands.add_command("cutscene-creator", help, play_cutscene(name, tick, player_index, parameter))
+  commands.add_command("cutscene", help, play_cutscene(name, tick, player_index, parameter))
 end
 
 function play_cutscene(name, tick, player_index, parameter)
@@ -8,16 +8,16 @@ function play_cutscene(name, tick, player_index, parameter)
     game.players[player_index].set_controller{
       type = defines.controllers.cutscene,
       -- character = game.players[player_index],
-      waypoints = create_waypoints_simple(parameter),
+      waypoints = create_waypoints_simple(parameter, player_index),
       -- final_transition_time = final_transition_time(parameter)
     }
   end
 end
 
-function create_waypoints_simple(parameter)
-  local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][gps=53,38,nauvis]"
+function create_waypoints_simple(parameter, player_index)
+--   local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][gps=53,38,nauvis]"
   local waypoints = {}
-  local tt, tw, z = "transition_time=300", "time_to_wait=30", "zoom=3"
+  local tt, tw, z = "transition_time="..game.players[player_index].mod_settings["cc-transition-time"], "time_to_wait="..game.players[player_index].mod_settings["cc-time-wait"], "zoom="..game.players[player_index].mod_settings["cc-zoom"]
   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("%}%{","}}, {")
   parameter = parameter.."}"
   parameter = parameter:gsub("%}%}","},"..tt..","..tw..","..z.."}")
@@ -28,10 +28,10 @@ function create_waypoints_simple(parameter)
         waypoints = result
         return waypoints
       else
-          print("pcall failed: "..result)
+          game.print("pcall failed: "..result)
       end
   else
-      print("load failed: "..errmsg)
+      game.print("load failed: "..errmsg)
   end
 end
 
