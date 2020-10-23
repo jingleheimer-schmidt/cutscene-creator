@@ -16,10 +16,10 @@ local timeWaitSetting = {
 }
 
 local zoomSetting = {
-  type = "int-setting",
+  type = "double-setting",
   name = "cc-zoom",
   setting_type = "runtime-per-user",
-  minimum_value = 1,
+  minimum_value = .1,
   default_value = 1
 }
   
