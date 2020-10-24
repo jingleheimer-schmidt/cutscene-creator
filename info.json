@@ -1,6 +1,6 @@
 {
 	"name": "cutscene-creator",
-	"version": "0.0.6",
+	"version": "0.0.1",
 	"title": "Cutscene Creator",
 	"description": "Adds a command to create custom cutscenes",
 	"author": "asher_sky",
