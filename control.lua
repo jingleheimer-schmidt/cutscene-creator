@@ -1,10 +1,13 @@
 
-script.on_load()
-  commands.add_command("cutscene", "shift-click on map to create waypoints", play_cutscene(name, tick, player_index, parameter))
-  commands.add_command("cc", "/c cc tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom>", play_cutscene(name, tick, player_index, parameter))
-end
+script.on_init(function()
+  commands.add_command("cutscene", "shift-click on map to create waypoints", play_cutscene)
+  commands.add_command("cc", "/c cc tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom>", play_cutscene)
+end)
 
-function play_cutscene(name, tick, player_index, parameter)
+function play_cutscene(command)
+  local player_index = command.player_index
+  local parameter = command.parameter
+  local name = command.name
   if name == "cutscene" then
     game.players[player_index].set_controller{
       type = defines.controllers.cutscene,
@@ -24,10 +27,15 @@ end
 function create_waypoints_simple(parameter, player_index)
 --   local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][gps=53,38,nauvis]"
   local waypoints = {}
-  local tt, tw, z = "transition_time="..game.players[player_index].mod_settings["cc-transition-time"], "time_to_wait="..game.players[player_index].mod_settings["cc-time-wait"], "zoom="..game.players[player_index].mod_settings["cc-zoom"]
+  local cc_transition_time = game.players[player_index].mod_settings["cc-transition-time"].value
+  local tt = "transition_time="..cc_transition_time
+  local cc_time_wait = game.players[player_index].mod_settings["cc-time-wait"].value
+  local wt = "time_to_wait="..cc_time_wait
+  local zoom = game.players[player_index].mod_settings["cc-zoom"].value
+  local z = "zoom="..zoom
   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("%}%{","}}, {")
   parameter = parameter.."}"
-  parameter = parameter:gsub("%}%}","},"..tt..","..tw..","..z.."}")
+  parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
   local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints')
   if proc then
   local status, result = pcall(proc)
@@ -60,4 +68,4 @@ function create_waypoints_custom(parameter)
   else
       game.print("load failed: "..errmsg)
   end
-
+end
