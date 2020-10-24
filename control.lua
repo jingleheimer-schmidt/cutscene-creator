@@ -1,14 +1,23 @@
 
 script.on_load()
   commands.add_command("cutscene", help, play_cutscene(name, tick, player_index, parameter))
+  commands.add_command("cc", help, play_cutscene(name, tick, player_index, parameter))
 end
 
 function play_cutscene(name, tick, player_index, parameter)
-  if name == "cutscene-creator" then
+  if name == "cutscene" then
     game.players[player_index].set_controller{
       type = defines.controllers.cutscene,
       -- character = game.players[player_index],
       waypoints = create_waypoints_simple(parameter, player_index),
+      -- final_transition_time = final_transition_time(parameter)
+    }
+  end
+  if name == "cc" then
+    game.players[player_index].set_controller{
+      type = defines.controllers.cutscene,
+      -- character = game.players[player_index],
+      waypoints = create_waypoints_custom(parameter),
       -- final_transition_time = final_transition_time(parameter)
     }
   end
@@ -34,6 +43,26 @@ function create_waypoints_simple(parameter, player_index)
       game.print("load failed: "..errmsg)
   end
 end
+
+function create_waypoints_custom(parameter)
+--   local parameter = "[gps=51,37,nauvis]   tt300 wt30 z3 [gps=51,38,nauvis]tt300 wt30 z3    [gps=53,38,nauvis]   tt300 wt30 z3"
+  local waypoints = {}
+  parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("tt",",transition_time="):gsub("wt",",time_to_wait="):gsub("z",",zoom="):gsub("%{position","},{position"):gsub("%}%,","",1)
+  parameter = parameter.."}"
+  print(parameter)
+  local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints')
+  if proc then
+  local status, result = pcall(proc)
+      if status then
+        waypoints = result
+        print(proc)
+        return waypoints
+      else
+          print("pcall failed: "..result)
+      end
+  else
+      print("load failed: "..errmsg)
+  end
 
 -- -- example parameter = "[gps=0,0] tt300 wt30 z3 [gps=0,0] tt300 wt30 z3 [gps=0,0] tt300 wt30 z3 [gps=0,0] tt300 wt30 z3"
 -- function create_waypoints(parameter)
