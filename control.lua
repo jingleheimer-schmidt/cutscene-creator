@@ -52,8 +52,8 @@ end
 
 function get_train_entity(train_unit_number, player_index)
   local surface_name = game.players[player_index].surface.name
-  local table_of_trains = game.surfaces[surface_name].get_trains
-  for a,b in ipairs(table_of_trains) do
+  local table_of_trains = game.surfaces[surface_name].get_trains --do i have to specify the surface, or can i search all surfaces? i think the cutscene only works for the current surface so I might as only check current surface for trains... but something here isn't working
+  for a,b in pairs(table_of_trains) do
     local fronts = b.locomotives.front_movers
     local backs = b.locomotives.back_movers
     for c,d in pairs(fronts) do
@@ -107,7 +107,7 @@ parameter = parameter:gsub("%]","}")
 print(parameter)
 parameter = parameter:gsub("gps=","position={")
 print(parameter)
-parameter = parameter:gsub("train=","get_train_entity{")
+parameter = parameter:gsub("train=","target=get_train_entity{")
 print(parameter)
 parameter = parameter:gsub("%}%{","}}, {")
 print(parameter)
@@ -117,10 +117,10 @@ parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
 print(parameter)
 parameter = parameter:gsub("%{(%d*)%}","(%1,player_index)")
 print(parameter)
-parameter = parameter:gsub("%(%{","(")
-print(parameter)
-parameter = parameter:gsub("%}%,player_index",",player_index")
-print(parameter)
+-- parameter = parameter:gsub("%(%{","(")
+-- print(parameter)
+-- parameter = parameter:gsub("%}%,player_index",",player_index")
+-- print(parameter)
 
 ]]
 
@@ -131,9 +131,10 @@ function create_waypoints_simple(parameter, player_index)
   local tt = "transition_time="..game.players[player_index].mod_settings["cc-transition-time"].value
   local wt = "time_to_wait="..game.players[player_index].mod_settings["cc-time-wait"].value
   local z = "zoom="..game.players[player_index].mod_settings["cc-zoom"].value
-  parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("train=","get_train_entity{"):gsub("%}%{","}}, {")
+  parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("train=","target=get_train_entity{"):gsub("%}%{","}}, {")
   parameter = parameter.."}"
   parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}"):gsub("%{(%d*)%}","(%1,player_index)")
+  -- local parameter = {position={51,38,nauvis},transition_time=200,time_to_wait=20,zoom=2}, {target=get_train_entity(98,player_index),transition_time=200,time_to_wait=20,zoom=2}, {position={20,10},transition_time=200,time_to_wait=20,zoom=2}, {target=get_train_entity(2453,player_index),transition_time=200,time_to_wait=20,zoom=2}
   local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints')
   if proc then
   local status, result = pcall(proc, player_index)
