@@ -48,6 +48,73 @@ function create_cutscene_custom(parameter, player_index)
   }
 end
 
+function get_train_entity(train_unit_number, player_index)
+  for a,b in ipairs(game.surfaces[game.players[player_index].surface].get_trains) do 
+    local fronts = b.locomotives.front_movers 
+    local backs = b.locomotives.back_movers 
+    for c,d in ipairs(fronts) do
+      if d.unit_id == train_unit_number:match(%d*) then
+        return d
+      end
+    end
+    for e,f in ipairs(backs) do
+      if f.unit_id == train_unit_number:match(%d*) then
+        return f
+      end
+    end
+  end
+end
+
+local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][train=98][gps=20,10][train=2453]"
+local cc_transition_time = 200
+local tt = "transition_time="..cc_transition_time
+local cc_time_wait = 20
+local wt = "time_to_wait="..cc_time_wait
+local zoom = 2
+local z = "zoom="..zoom
+parameter = parameter:gsub("%s*","")
+parameter = parameter:gsub("%[","{")
+parameter = parameter:gsub("%]","}")
+parameter = parameter:gsub("gps=","position={")
+parameter = parameter:gsub("%}%{","}}, {")
+parameter = parameter.."}"
+parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
+
+
+  local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][train=98][gps=20,10][train=2453]"
+  local cc_transition_time = 200
+  local tt = "transition_time="..cc_transition_time
+  local cc_time_wait = 20
+  local wt = "time_to_wait="..cc_time_wait
+  local zoom = 2
+  local z = "zoom="..zoom
+  parameter = parameter:gsub("%s*","")
+  print(parameter)
+  parameter = parameter:gsub("%[","{")
+  print(parameter)
+  parameter = parameter:gsub("%]","}")
+  print(parameter)
+  parameter = parameter:gsub("gps=","position={")
+  print(parameter)
+  parameter = parameter:gsub("train=","get_train_entity{")
+  print(parameter)
+  parameter = parameter:gsub("%}%{","}}, {")
+  print(parameter)
+  parameter = parameter.."}"
+  print(parameter)
+  parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
+  print(parameter)
+  parameter = parameter:gsub("%{%d*%}","("..parameter:match("%{%d*%}")..",player_index)")
+  print(parameter)
+  parameter = parameter:gsub()
+  parameter = parameter:gsub("%(%{","(")
+  print(parameter)
+  parameter = parameter:gsub("%}%,player_index",",player_index")
+  print(parameter)
+
+
+
+
 function create_waypoints_simple(parameter, player_index)
 --   local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][gps=53,38,nauvis]"
   local waypoints = {}
