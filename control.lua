@@ -51,8 +51,7 @@ function create_cutscene_custom(created_waypoints, player_index)
 end
 
 function get_train_entity(train_unit_number, player_index)
-  local surface_name = game.players[player_index].surface.name
-  local table_of_trains = game.surfaces[surface_name].get_trains --do i have to specify the surface, or can i search all surfaces? i think the cutscene only works for the current surface so I might as only check current surface for trains... but something here isn't working
+  local table_of_trains = game.get_player(player_index).surface.get_trains()
   for a,b in pairs(table_of_trains) do
     local fronts = b.locomotives.front_movers
     local backs = b.locomotives.back_movers
@@ -60,14 +59,14 @@ function get_train_entity(train_unit_number, player_index)
       if d.unit_number == train_unit_number then
         return d
       else
-        game.print("no front movers")
+        -- game.print("no front movers")
       end
     end
     for e,f in pairs(backs) do
       if f.unit_number == train_unit_number then
         return f
       else
-        game.print("no back movers")
+        -- game.print("no back movers")
       end
     end
   end
@@ -126,7 +125,7 @@ print(parameter)
 
 
 function create_waypoints_simple(parameter, player_index)
---   local parameter = "[gps=51,37,nauvis][gps=51,38,nauvis][gps=53,38,nauvis]"
+--   local parameter = "[gps=51,37,nauvis][train=3841][gps=53,38,nauvis]"
   local waypoints = {}
   local tt = "transition_time="..game.players[player_index].mod_settings["cc-transition-time"].value
   local wt = "time_to_wait="..game.players[player_index].mod_settings["cc-time-wait"].value
@@ -135,9 +134,9 @@ function create_waypoints_simple(parameter, player_index)
   parameter = parameter.."}"
   parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}"):gsub("%{(%d*)%}","(%1,player_index)")
   -- local parameter = {position={51,38,nauvis},transition_time=200,time_to_wait=20,zoom=2}, {target=get_train_entity(98,player_index),transition_time=200,time_to_wait=20,zoom=2}, {position={20,10},transition_time=200,time_to_wait=20,zoom=2}, {target=get_train_entity(2453,player_index),transition_time=200,time_to_wait=20,zoom=2}
-  local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints')
+  local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints',"bad_waypoints","t",{get_train_entity=get_train_entity,player_index=player_index})
   if proc then
-  local status, result = pcall(proc, player_index)
+  local status, result = pcall(proc)
     if status then
       waypoints = result
       return waypoints
