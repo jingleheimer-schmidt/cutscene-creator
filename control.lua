@@ -41,6 +41,8 @@ function create_cutscene(created_waypoints, player_index)
   }
 end
 
+-- TO DO: make sure all the trains and train stops are real before playing the cutscene, otherwise cancel and say invalid train or whatever. Right now user can input [train=3210] and if that doesn't exist the game crash, not caught by pcall (because error doesn't come until target=nil is loaded from waypoints).
+
 -- function create_cutscene_custom(created_waypoints, player_index)
 --   game.players[player_index].set_controller{
 --     type = defines.controllers.cutscene,
