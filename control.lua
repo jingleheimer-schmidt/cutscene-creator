@@ -11,8 +11,17 @@ function play_cutscene(command)
   if name == "cutscene" then
     local created_waypoints = create_waypoints_simple(parameter, player_index)
     if created_waypoints then
-      sync_color(player_index)
-      create_cutscene(created_waypoints, player_index)
+      for a,b in pairs(created_waypoints) do
+        if not (b.target or b.position) then
+          local target_check = "invalid target"
+        end
+      end
+      if target_check == "invalid target" then
+        game.print("Invalid waypoints: train or station does not exist")
+      else
+        sync_color(player_index)
+        create_cutscene(created_waypoints, player_index)
+      end
     else
       game.print("Invalid waypoints")
     end
