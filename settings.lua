@@ -4,7 +4,8 @@ local transitionTimeSetting = {
   name = "cc-transition-time",
   setting_type = "runtime-per-user",
   minimum_value = 1,
-  default_value = 300
+  default_value = 120,
+  order = "cc-1"
 }
 
 local timeWaitSetting = {
@@ -12,7 +13,8 @@ local timeWaitSetting = {
   name = "cc-time-wait",
   setting_type = "runtime-per-user",
   minimum_value = 1,
-  default_value = 120
+  default_value = 60,
+  order = "cc-2"
 }
 
 local zoomSetting = {
@@ -22,6 +24,7 @@ local zoomSetting = {
   minimum_value = .1,
   default_value = .75,
   maximum_value = 100
+  order = "cc-3"
 }
 
 data:extend({
