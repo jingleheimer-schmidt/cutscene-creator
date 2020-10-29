@@ -2,7 +2,7 @@
 	"name": "cutscene-creator",
 	"version": "0.0.1",
 	"title": "Cutscene Creator",
-	"description": "Adds a command to create custom cutscenes",
+	"description": "Adds a command to create custom cutscenes. Use /cutscene and shift-click anywhere on the map to specify waypoints (positions, trains, and train stations are all supported!). Additional settings for transition time (how long it takes the camera to pan from one waypoint to the next), waiting time (how long the camera will wait at a waypoint before moving on to the next one), and zoom can be adjusted in mod settings. Use /end-cutscene to end a cutscene early and immediately return control to the player.",
 	"author": "asher_sky",
 	"dependencies": ["base >= 1.0.0"],
 	"factorio_version": "1.0"
