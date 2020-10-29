@@ -20,9 +20,10 @@ local zoomSetting = {
   name = "cc-zoom",
   setting_type = "runtime-per-user",
   minimum_value = .1,
-  default_value = 1
+  default_value = .75,
+  maximum_value = 100
 }
-  
+
 data:extend({
   transitionTimeSetting,
   timeWaitSetting,
