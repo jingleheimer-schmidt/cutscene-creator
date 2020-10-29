@@ -2,7 +2,7 @@
 script.on_load(function()
   commands.add_command("cutscene", "[gps=0,0][train=101][train-stop=101] - Shift-click on map, trains, or stations to create waypoints.", play_cutscene)
   -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom at position>", play_cutscene)
-  commands.add_command("end-cutscene","ends the currently playing cutscene and returns control to the player immediately", end_cutscene)
+  commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
 end)
 
 function end_cutscene(command)
