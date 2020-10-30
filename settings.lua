@@ -23,7 +23,7 @@ local zoomSetting = {
   setting_type = "runtime-per-user",
   minimum_value = .1,
   default_value = .75,
-  maximum_value = 100
+  maximum_value = 100,
   order = "cc-3"
 }
 
