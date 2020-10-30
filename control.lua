@@ -1,46 +1,52 @@
 
--- script.on_load(function()
-  commands.add_command("cutscene", "[gps=0,0][train="..get_train_unit_num_4_help().."][train-stop="..get_station_unit_num_4_help().."] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings", play_cutscene)
+script.on_init(function()
+  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings", play_cutscene)
   -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom at position>", play_cutscene)
   commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
--- end)
+end)
 
-function get_train_unit_num_4_help()
-  local table_of_trains = game.surfaces[1].get_trains()
-  for a,b in pairs(table_of_trains) do
-    local fronts = b.locomtives.front_movers
-    local backs = b.locomtives.back_movers
-    for c,d in pairs(fronts) do
-      if d.unit_number then
-        train_num = d.unit_number
-        return train_num
-      else
-        for e,f in pairs(backs) do
-          if f.unit_number then
-            train_num = f.unit_number
-            return train_num
-          else
-            train_num = 101
-            return train_num
-          end
-        end
-      end
-    end
-  end
-end
+script.on_load(function()
+  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings", play_cutscene)
+  -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom at position>", play_cutscene)
+  commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
+end)
 
-function get_station_unit_num_4_help()
-  local table_of_stations = game.get_train_stops()
-  for a,b in pairs(table_of_stations) do
-    if b.unit_number then
-      station_num = b.unit_number
-      return station_num
-    else
-      station_num = 101
-      return station_num
-    end
-  end
-end
+-- function get_train_unit_num_4_help()
+--   local table_of_trains = game.surfaces[1].get_trains()
+--   for a,b in pairs(table_of_trains) do
+--     local fronts = b.locomtives.front_movers
+--     local backs = b.locomtives.back_movers
+--     for c,d in pairs(fronts) do
+--       if d.unit_number then
+--         train_num = d.unit_number
+--         return train_num
+--       else
+--         for e,f in pairs(backs) do
+--           if f.unit_number then
+--             train_num = f.unit_number
+--             return train_num
+--           else
+--             train_num = 101
+--             return train_num
+--           end
+--         end
+--       end
+--     end
+--   end
+-- end
+--
+-- function get_station_unit_num_4_help()
+--   local table_of_stations = game.get_train_stops()
+--   for a,b in pairs(table_of_stations) do
+--     if b.unit_number then
+--       station_num = b.unit_number
+--       return station_num
+--     else
+--       station_num = 101
+--       return station_num
+--     end
+--   end
+-- end
 
 function end_cutscene(command)
   if game.players[command.player_index].controller_type == defines.controllers.cutscene then
