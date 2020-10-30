@@ -73,6 +73,12 @@ function play_cutscene(command)
           return
         end
       end
+      for c,d in pairs(created_waypoints) do
+        if ( d.position[1]<-1000000 or d.position[1]>1000000 or d.position[2]<-1000000 or d.position[2]>1000000 ) then
+          game.print("Error 404: Coordinates not found")
+          return
+        end
+      end
       sync_color(player_index)
       create_cutscene(created_waypoints, player_index)
     else
