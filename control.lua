@@ -12,19 +12,21 @@ script.on_load(function()
 end)
 
 function end_cutscene(command)
-  if game.players[command.player_index].controller_type == defines.controllers.cutscene then
-    game.players[command.player_index].exit_cutscene()
+  local player = game.get_player(command.player_index)
+  if player.controller_type == defines.controllers.cutscene then
+    player.exit_cutscene()
   else
-    game.print("No cutscene currently playing")
+    player.print("No cutscene currently playing")
   end
 end
 
 function play_cutscene(command)
   local player_index = command.player_index
+  local player = game.get_player(player_index)
   local parameter = command.parameter
   local name = command.name
-  if game.players[player_index].controller_type == defines.controllers.cutscene then
-    game.print("[color=blue]Wait. That's illegal.[/color]")
+  if player.controller_type == defines.controllers.cutscene then
+    player.print("[color=blue]Wait. That's illegal.[/color]")
     return
   end
   if name == "cutscene" then
@@ -32,14 +34,14 @@ function play_cutscene(command)
     if created_waypoints then
       for a,b in pairs(created_waypoints) do
         if not ( b.target or b.position ) then
-          game.print("Invalid waypoints: train or station does not exist")
+          player.print("Invalid waypoints: train or station does not exist")
           return
         end
       end
       for c,d in pairs(created_waypoints) do
         if d.position then
           if ( d.position[1]<-1000000 or d.position[1]>1000000 or d.position[2]<-1000000 or d.position[2]>1000000 ) then
-            game.print("Error 404: Coordinates not found")
+            player.print("Error 404: Coordinates not found")
             return
           end
         end
@@ -47,7 +49,7 @@ function play_cutscene(command)
       sync_color(player_index)
       create_cutscene(created_waypoints, player_index)
     else
-      game.print("Invalid waypoints")
+      player.print("Invalid waypoints")
     end
   end
   -- if name == "cc" then
@@ -62,15 +64,17 @@ function play_cutscene(command)
 end
 
 function sync_color(player_index)
-  game.players[player_index].character.color = game.players[player_index].color
+  local player = game.get_player(player_index)
+  player.character.color = player.color
 end
 
 function create_cutscene(created_waypoints, player_index)
-  game.players[player_index].set_controller{
+  local player = game.get_player(player_index)
+  player.set_controller{
     type = defines.controllers.cutscene,
     waypoints = created_waypoints,
-    start_position = game.players[player_index].position,
-    final_transition_time = game.players[player_index].mod_settings["cc-transition-time"].value
+    start_position = player.position,
+    final_transition_time = player.mod_settings["cc-transition-time"].value
   }
 end
 
@@ -119,9 +123,10 @@ end
 function create_waypoints_simple(parameter, player_index)
 --   local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
   local waypoints = {}
-  local tt = "transition_time="..game.players[player_index].mod_settings["cc-transition-time"].value
-  local wt = "time_to_wait="..game.players[player_index].mod_settings["cc-time-wait"].value
-  local z = "zoom="..game.players[player_index].mod_settings["cc-zoom"].value
+  local player = game.get_player(player_index)
+  local tt = "transition_time="..player.mod_settings["cc-transition-time"].value
+  local wt = "time_to_wait="..player.mod_settings["cc-time-wait"].value
+  local z = "zoom="..player.mod_settings["cc-zoom"].value
   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("train=","target=get_train_entity{"):gsub("train%-stop=","target=get_station_entity{"):gsub("%}%{","}}, {")
   parameter = parameter.."}"
   parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}"):gsub("%{(%d*)%}","(%1,player_index)")
