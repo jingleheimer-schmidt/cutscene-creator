@@ -15,7 +15,9 @@ function end_cutscene(command)
   local player = game.get_player(command.player_index)
   if ((player.controller_type == defines.controllers.cutscene) and (global.cc_status) and (global.cc_status[command.player_index]) and (global.cc_status[command.player_index] == "active")) then
     player.exit_cutscene()
-    global.cc_status[command.player_index] = "inactive"
+    if global.cc_status then
+      global.cc_status[player.index] = "inactive"
+    end
   else
     -- player.print("No cutscene currently playing")
   end
@@ -87,9 +89,9 @@ function create_cutscene(created_waypoints, player)
   }
   if not global.cc_status then
     global.cc_status = {}
-    global.cc_status[player_index] = "active"
+    global.cc_status[player.index] = "active"
   else
-    global.cc_status[player_index] = "active"
+    global.cc_status[player.index] = "active"
   end
 end
 
@@ -180,9 +182,10 @@ end
 -- end
 
 local interface_functions = {}
-
 interface_functions.cc_status = function(player_index)
-  return global.cc_status[player_index]
+  if global.cc_status and global.cc_status[player_index] then
+    return global.cc_status[player_index]
+  end
 end
 
 remote.add_interface("cc_check",interface_functions)
