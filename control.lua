@@ -29,7 +29,11 @@ function play_cutscene(command)
     player.print("[color=blue]Wait. That's illegal.[/color]")
     return
   end
-  if name == "cutscene" then
+  if (parameter == nil) then
+    player.print("Invalid waypoints: cutscene must have at least one waypoint or target")
+    return
+  end
+  if ((name == "cutscene") and player.valid) then
     local created_waypoints = create_waypoints_simple(parameter, player_index)
     if created_waypoints then
       for a,b in pairs(created_waypoints) do
