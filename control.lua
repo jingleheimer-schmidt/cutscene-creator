@@ -13,10 +13,11 @@ end)
 
 function end_cutscene(command)
   local player = game.get_player(command.player_index)
-  if player.controller_type == defines.controllers.cutscene then
+  if ((player.controller_type == defines.controllers.cutscene) and (global.cc_status) and (global.cc_status[command.player_index]) and (global.cc_status[command.player_index] == "active")) then
     player.exit_cutscene()
+    global.cc_status[command.player_index] = "inactive"
   else
-    player.print("No cutscene currently playing")
+    -- player.print("No cutscene currently playing")
   end
 end
 
@@ -84,6 +85,12 @@ function create_cutscene(created_waypoints, player)
     start_position = player.position,
     final_transition_time = player.mod_settings["cc-transition-time"].value
   }
+  if not global.cc_status then
+    global.cc_status = {}
+    global.cc_status[player_index] = "active"
+  else
+    global.cc_status[player_index] = "active"
+  end
 end
 
 -- function create_cutscene_custom(created_waypoints, player_index)
@@ -171,3 +178,11 @@ end
 --   --   game.print(errmsg)
 --   end
 -- end
+
+local interface_functions = {}
+
+interface_functions.cc_status = function(player_index)
+  return global.cc_status[player_index]
+end
+
+remote.add_interface("cc_check",interface_functions)
