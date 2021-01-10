@@ -1,9 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
-Date: 2020-12-01
+Date: 2021-01-09
   Changes:
     - updated for factorio version 1.1
     - minor change to how player entity is handled within the script
+    - removed function to sync player and character color since cutscene_character now exists
+    - fixed crash when calling /cutscene with no waypoints
+    - fixed crash when providing waypoint coordinates which included an invalid surface
     - added changelog
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
