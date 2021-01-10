@@ -50,7 +50,7 @@ function play_cutscene(command)
           end
         end
       end
-      sync_color(player_index)
+      -- sync_color(player_index)
       create_cutscene(created_waypoints, player_index)
     else
       player.print("Invalid waypoints")
@@ -66,11 +66,11 @@ function play_cutscene(command)
   --   end
   -- end
 end
-
-function sync_color(player_index)
-  local player = game.get_player(player_index)
-  player.character.color = player.color
-end
+--
+-- function sync_color(player_index)
+--   local player = game.get_player(player_index)
+--   player.character.color = player.color
+-- end
 
 function create_cutscene(created_waypoints, player_index)
   local player = game.get_player(player_index)
