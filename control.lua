@@ -51,7 +51,7 @@ function play_cutscene(command)
         end
       end
       -- sync_color(player_index)
-      create_cutscene(created_waypoints, player_index)
+      create_cutscene(created_waypoints, player)
     else
       player.print("Invalid waypoints")
     end
@@ -72,8 +72,8 @@ end
 --   player.character.color = player.color
 -- end
 
-function create_cutscene(created_waypoints, player_index)
-  local player = game.get_player(player_index)
+function create_cutscene(created_waypoints, player)
+  -- local player = game.get_player(player_index)
   player.set_controller{
     type = defines.controllers.cutscene,
     waypoints = created_waypoints,
