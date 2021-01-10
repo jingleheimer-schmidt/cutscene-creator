@@ -51,7 +51,11 @@ function play_cutscene(command)
         end
       end
       -- sync_color(player_index)
-      create_cutscene(created_waypoints, player)
+      -- create_cutscene(created_waypoints, player)
+      local status, result = pcall(create_cutscene, created_waypoints, player)
+      if not status then
+        player.print("Invalid waypoints: "..result)
+      end
     else
       player.print("Invalid waypoints")
     end
