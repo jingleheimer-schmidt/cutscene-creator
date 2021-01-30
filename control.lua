@@ -1,15 +1,21 @@
 
 script.on_init(function()
-  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings", play_cutscene)
-  -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom at position>", play_cutscene)
+  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings. See mod portal page for documentation of advanced features", play_cutscene)
+  -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom>", play_cutscene)
   commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
 end)
 
 script.on_load(function()
-  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings", play_cutscene)
-  -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom at position>", play_cutscene)
+  commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings. See mod portal page for documentation of advanced features", play_cutscene)
+  -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom>", play_cutscene)
   commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
 end)
+
+-- function add_commands()
+--   commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings. See mod portal page for documentation of advanced features", play_cutscene)
+--   -- commands.add_command("cc", "tt<transition time (ticks)> wt<waiting time (ticks)> z<zoom>", play_cutscene)
+--   commands.add_command("end-cutscene","- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
+-- end
 
 function end_cutscene(command)
   local player = game.get_player(command.player_index)
@@ -48,24 +54,30 @@ function play_cutscene(command)
     return
   end
   if (parameter == nil) then
-    player.print("Invalid waypoints: cutscene must have at least one waypoint or target")
+    player.print("Invalid waypoints: cutscene must have at least one waypoint or target. Shift-click on the map or a train to add a waypoint when constructing the command.")
     return
   end
   if ((name == "cutscene") and player.valid) then
-    local created_waypoints = create_waypoints_simple(parameter, player_index)
+    local created_waypoints = create_waypoints_combo(parameter, player_index)
     if created_waypoints then
       for a,b in pairs(created_waypoints) do
         if not ( b.target or b.position ) then
           player.print("Invalid waypoints: train or station does not exist")
           return
         end
-      end
-      for c,d in pairs(created_waypoints) do
-        if d.position then
-          if ( d.position[1]<-1000000 or d.position[1]>1000000 or d.position[2]<-1000000 or d.position[2]>1000000 ) then
+        if b.position then
+          if ( b.position[1]<-1000000 or b.position[1]>1000000 or b.position[2]<-1000000 or b.position[2]>1000000 ) then
             player.print("Error 404: coordinates not found")
             return
           end
+        end
+        if not b.transition_time then
+          player.print("Invalid waypoints: one or more waypoints is missing transition time")
+          return
+        end
+        if not b.time_to_wait then
+          player.print("Invalid waypoints: one or more waypoints is missing waiting time")
+          return
         end
       end
       -- sync_color(player_index)
@@ -78,11 +90,29 @@ function play_cutscene(command)
       player.print("Invalid waypoints")
     end
   end
-  -- if name == "cc" then
-  --   local created_waypoints = create_waypoints_custom(parameter)
+  -- if ((name == "cc") and player.valid) then
+  --   local created_waypoints = create_waypoints_custom(parameter, player_index)
   --   if created_waypoints then
-  --     sync_color(player_index)
-  --     create_cutscene_custom(created_waypoints, player_index)
+  --     for a,b in pairs(created_waypoints) do
+  --       if not ( b.target or b.position ) then
+  --         player.print("Invalid waypoints: train or station does not exist")
+  --         return
+  --       end
+  --     end
+  --     for c,d in pairs(created_waypoints) do
+  --       if d.position then
+  --         if ( d.position[1]<-1000000 or d.position[1]>1000000 or d.position[2]<-1000000 or d.position[2]>1000000 ) then
+  --           player.print("Error 404: coordinates not found")
+  --           return
+  --         end
+  --       end
+  --     end
+  --     -- sync_color(player_index)
+  --     -- create_cutscene_custom(created_waypoints, player_index)
+  --     local status, result = pcall(create_cutscene, created_waypoints, player)
+  --     if not status then
+  --       player.print("Invalid waypoints: "..result)
+  --     end
   --   else
   --     game.print("Invalid waypoints")
   --   end
@@ -158,35 +188,54 @@ function get_station_entity(station_unit_number, player_index)
   end
 end
 
-function create_waypoints_simple(parameter, player_index)
---   local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
-  local waypoints = {}
-  local player = game.get_player(player_index)
-  local tt = "transition_time="..player.mod_settings["cc-transition-time"].value
-  local wt = "time_to_wait="..player.mod_settings["cc-time-wait"].value
-  local z = "zoom="..player.mod_settings["cc-zoom"].value
-  parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("train=","target=get_train_entity{"):gsub("train%-stop=","target=get_station_entity{"):gsub("%}%{","}}, {")
-  parameter = parameter.."}"
-  parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}"):gsub("%{(%d*)%}","(%1,player_index)")
-  local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints',"bad_waypoints","t",{get_train_entity=get_train_entity,player_index=player_index,get_station_entity=get_station_entity})
-  if proc then
-  local status, result = pcall(proc)
-    if status then
-      waypoints = result
-      return waypoints
-    else
-      -- game.print("pcall failed: "..result)
-    end
-  else
-    -- game.print("load failed: "..errmsg)
-  end
-end
-
--- function create_waypoints_custom(parameter)
--- --   local parameter = "[gps=51,37,nauvis]   tt300 wt30 z3 [gps=51,38,nauvis]tt300 wt30 z3    [gps=53,38,nauvis]   tt300 wt30 z3"
+-- function create_waypoints_simple(parameter, player_index)
+-- --   local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
 --   local waypoints = {}
---   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("tt",",transition_time="):gsub("wt",",time_to_wait="):gsub("z",",zoom="):gsub("%{position","},{position"):gsub("%}%,","",1)
+--   local player = game.get_player(player_index)
+--   local tt = "transition_time="..player.mod_settings["cc-transition-time"].value
+--   local wt = "time_to_wait="..player.mod_settings["cc-time-wait"].value
+--   local z = "zoom="..player.mod_settings["cc-zoom"].value
+--   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}"):gsub("gps=","position={"):gsub("train=","target=get_train_entity{"):gsub("train%-stop=","target=get_station_entity{"):gsub("%}%{","}}, {")
 --   parameter = parameter.."}"
+--   parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}"):gsub("%{(%d*)%}","(%1,player_index)")
+--   local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints',"bad_waypoints","t",{get_train_entity=get_train_entity,player_index=player_index,get_station_entity=get_station_entity})
+--   if proc then
+--   local status, result = pcall(proc)
+--     if status then
+--       waypoints = result
+--       return waypoints
+--     else
+--       -- game.print("pcall failed: "..result)
+--     end
+--   else
+--     -- game.print("load failed: "..errmsg)
+--   end
+-- end
+--
+-- function create_waypoints_custom(parameter, player_index)
+-- --   local parameter = "[gps=51,37,nauvis]   tt300 wt30 z3 [gps=51,38,nauvis]tt300 wt30 z3    [gps=53,38,nauvis]   tt300 wt30 z3"
+-- --[[
+-- local tt = "transition_time="..69
+-- local wt = "time_to_wait="..420
+-- local z = "zoom="..2
+-- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
+-- --]]
+--   local waypoints = {}
+--   local player = game.get_player(player_index)
+--   parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}")
+--   parameter = parameter:gsub("gps=","position={")
+--   parameter = parameter:gsub("train=","target=get_train_entity{")
+--   parameter = parameter:gsub("train%-stop=","target=get_station_entity{")
+--   parameter = parameter:gsub("tt",",transition_time=")
+--   parameter = parameter:gsub("wt",",time_to_wait=")
+--   parameter = parameter:gsub("z",",zoom=")
+--   parameter = parameter:gsub("%{position","},{position")
+--   parameter = parameter:gsub("%{target","},{target")
+--   parameter = parameter:gsub("%}%,","",1)
+--   parameter = parameter:gsub("%}%{","}}, {")
+--   parameter = parameter.."}"
+--   parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
+--   parameter = parameter:gsub("%{(%d*)%}","(%1,player_index)")
 --   -- game.print(parameter)
 --   local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints')
 --   if proc then
@@ -201,6 +250,41 @@ end
 --   --   game.print(errmsg)
 --   end
 -- end
+
+function create_waypoints_combo(parameter, player_index)
+--   local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
+  local waypoints = {}
+  local player = game.get_player(player_index)
+  local tt = "transition_time="..player.mod_settings["cc-transition-time"].value
+  local wt = "time_to_wait="..player.mod_settings["cc-time-wait"].value
+  local z = "zoom="..player.mod_settings["cc-zoom"].value
+  parameter = parameter:gsub("%s*",""):gsub("%[","{"):gsub("%]","}")
+  parameter = parameter:gsub("gps=","position={")
+  parameter = parameter:gsub("train=","target=get_train_entity{")
+  parameter = parameter:gsub("train%-stop=","target=get_station_entity{")
+  parameter = parameter:gsub("tt",",transition_time=")
+  parameter = parameter:gsub("wt",",time_to_wait=")
+  parameter = parameter:gsub("z",",zoom=")
+  parameter = parameter:gsub("%{position","},{position")
+  parameter = parameter:gsub("%{target","},{target")
+  parameter = parameter:gsub("%}%,","",1)
+  parameter = parameter:gsub("%}%{","}}, {")
+  parameter = parameter.."}"
+  parameter = parameter:gsub("%}%}","},"..tt..","..wt..","..z.."}")
+  parameter = parameter:gsub("%{(%d*)%}","(%1,player_index)")
+  local proc, errmsg = load('local waypoints={'..parameter..'} return waypoints',"bad_waypoints","t",{get_train_entity=get_train_entity,player_index=player_index,get_station_entity=get_station_entity})
+  if proc then
+    local status, result = pcall(proc)
+    if status then
+      waypoints = result
+      return waypoints
+    else
+      -- game.print("pcall failed: "..result)
+    end
+  else
+    -- game.print("load failed: "..errmsg)
+  end
+end
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
