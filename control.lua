@@ -94,12 +94,14 @@ end
 
 function create_cutscene(created_waypoints, player)
   -- local player = game.get_player(player_index)
+  local transfer_alt_mode = player.game_view_settings.show_entity_info
   player.set_controller{
     type = defines.controllers.cutscene,
     waypoints = created_waypoints,
     start_position = player.position,
     final_transition_time = player.mod_settings["cc-transition-time"].value
   }
+  player.game_view_settings.show_entity_info = transfer_alt_mode
   if not global.cc_status then
     global.cc_status = {}
     global.cc_status[player.index] = "active"
