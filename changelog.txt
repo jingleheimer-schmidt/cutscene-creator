@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.5
+Date: 09MAY2022
+  Changes:
+    - alt-mode is now persistent and won't be turned off when starting new cutscenes
+---------------------------------------------------------------------------------------------------
+Version: 0.0.4
+Date: 2021-01-29
+  Changes:
+    - added support for setting transition time, waiting time, and zoom individually for each waypoint (see mod portal page for documentation)
+---------------------------------------------------------------------------------------------------
+Version: 0.0.3
+Date: 2021-01-15
+  Changes:
+    - fixed that under certain conditions the mod interface function would not return the correct cutscene state
+---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 2021-01-09
   Changes:
