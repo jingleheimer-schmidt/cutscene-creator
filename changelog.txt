@@ -3,6 +3,8 @@ Version: 0.0.6
 Date: ????
   Changes:
     - standardized code formatting
+  Locale:
+    - added locale strings for command error messages
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
 Date: 09MAY2022

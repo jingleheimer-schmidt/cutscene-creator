@@ -40,21 +40,17 @@ script.on_event(defines.events.on_cutscene_waypoint_reached, function(event)
 end)
 
 function play_cutscene(command)
-    player.print("[color=blue]Wait. That's illegal.[/color]")
-    player.print("Invalid waypoints: cutscene must have at least one waypoint or target. Shift-click on the map or a train to add a waypoint when constructing the command.")
-          player.print("Invalid waypoints: train or station does not exist")
-            player.print("Error 404: coordinates not found")
-          player.print("Invalid waypoints: one or more waypoints is missing transition time")
-          player.print("Invalid waypoints: one or more waypoints is missing waiting time")
     local player_index = command.player_index
     local player = game.get_player(player_index)
     local parameter = command.parameter
     local name = command.name
     if not (player and player.valid) then return end
     if player.controller_type == defines.controllers.cutscene then
+        player.print({ "cc-messages.wait-thats-illegal" })
         return
     end
     if (parameter == nil) then
+        player.print({ "cc-messages.invalid-no-waypoints" })
         return
     end
     if ((name == "cutscene") and player.valid) then
@@ -62,17 +58,21 @@ function play_cutscene(command)
         if created_waypoints then
             for a, b in pairs(created_waypoints) do
                 if not (b.target or b.position) then
+                    player.print({ "cc-messages.invalid-no-target" })
                     return
                 end
                 if b.position then
                     if (b.position[1] < -1000000 or b.position[1] > 1000000 or b.position[2] < -1000000 or b.position[2] > 1000000) then
+                        player.print({ "cc-messages.invalid-coordinates" })
                         return
                     end
                 end
                 if not b.transition_time then
+                    player.print({ "cc-messages.invalid-no-transition-time" })
                     return
                 end
                 if not b.time_to_wait then
+                    player.print({ "cc-messages.invalid-no-wait-time" })
                     return
                 end
             end
@@ -80,11 +80,11 @@ function play_cutscene(command)
             -- create_cutscene(created_waypoints, player)
             local status, result = pcall(create_cutscene, created_waypoints, player)
             if not status then
+                player.print({ "cc-messages.invalid-waypoints-error-message", result })
             end
         else
+            player.print({ "cc-messages.invalid-waypoints" })
         end
-        player.print("Invalid waypoints: "..result)
-      player.print("Invalid waypoints")
     end
 end
 --
