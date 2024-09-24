@@ -8,7 +8,7 @@ script.on_load(function()
 end)
 
 function add_commands()
-    commands.add_command("cutscene", { "cc-command-help.cutscene-help" }, play_cutscene)
+    commands.add_command("cutscene", { "cc-command-help.play-cutscene-help" }, play_cutscene)
     commands.add_command("end-cutscene", { "cc-command-help.end-cutscene-help" }, end_cutscene)
 end
 
