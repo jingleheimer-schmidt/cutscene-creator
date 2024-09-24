@@ -3,6 +3,7 @@ Version: 0.0.6
 Date: ????
   Changes:
     - standardized code formatting
+    - updated mod description
   Locale:
     - added locale strings for command error messages
     - added German (de) locale from Crowdin
