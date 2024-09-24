@@ -5,6 +5,11 @@ Date: ????
     - standardized code formatting
   Locale:
     - added locale strings for command error messages
+    - added German (de) locale from Crowdin
+    - added French (fr) locale from Crowdin
+    - added Polish (pl) locale from Crowdin
+    - added Russian (ru) locale from Crowdin
+    - added Ukrainian (uk) locale from Crowdin
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
 Date: 09MAY2022
