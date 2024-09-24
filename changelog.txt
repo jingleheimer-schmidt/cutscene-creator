@@ -4,6 +4,7 @@ Date: 24SEP2024
   Changes:
     - standardized code formatting
     - updated mod description
+    - added extra protection for invalid players
   Locale:
     - added locale strings for command error messages
     - added German (de) locale from Crowdin

@@ -14,6 +14,7 @@ end
 
 function end_cutscene(command)
     local player = game.get_player(command.player_index)
+    if not (player and player.valid) then return end
     if ((player.controller_type == defines.controllers.cutscene) and (global.cc_status) and (global.cc_status[command.player_index]) and (global.cc_status[command.player_index] == "active")) then
         player.exit_cutscene()
         if global.cc_status then
@@ -155,6 +156,7 @@ function create_waypoints_combo(parameter, player_index)
     -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
     local waypoints = {}
     local player = game.get_player(player_index)
+    if not (player and player.valid) then return end
     local tt = "transition_time=" .. player.mod_settings["cc-transition-time"].value
     local wt = "time_to_wait=" .. player.mod_settings["cc-time-wait"].value
     local z = "zoom=" .. player.mod_settings["cc-zoom"].value
