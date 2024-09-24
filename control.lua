@@ -8,8 +8,8 @@ script.on_load(function()
 end)
 
 function add_commands()
-    commands.add_command("cutscene", "[gps=0,0][train=210][train-stop=140] - Shift-click on map, trains, or stations to create waypoints. Additional options in Mod Settings. See mod portal page for documentation of advanced features", play_cutscene)
-    commands.add_command("end-cutscene", "- Ends the currently playing cutscene and immediately returns control to the player", end_cutscene)
+    commands.add_command("cutscene", { "cc-command-help.cutscene-help" }, play_cutscene)
+    commands.add_command("end-cutscene", { "cc-command-help.end-cutscene-help" }, end_cutscene)
 end
 
 function end_cutscene(command)
