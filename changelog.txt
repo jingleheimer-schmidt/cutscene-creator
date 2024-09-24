@@ -9,6 +9,7 @@ Date: 24SEP2024
   Locale:
     - added locale strings for command error messages
     - added locale strings for command help messages
+    - added locale string for mod name and description
     - added German (de) locale from Crowdin
     - added French (fr) locale from Crowdin
     - added Polish (pl) locale from Crowdin
