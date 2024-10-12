@@ -1,4 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.6
+Date: 12OCT2024
+  Changes:
+    - standardized code formatting
+    - updated mod description
+    - added extra protection for invalid players
+    - added license file
+  Locale:
+    - added locale strings for command error messages
+    - added locale strings for command help messages
+    - added locale string for mod name and description
+    - added German (de) locale from Crowdin
+    - added French (fr) locale from Crowdin
+    - added Polish (pl) locale from Crowdin
+    - added Russian (ru) locale from Crowdin
+    - added Ukrainian (uk) locale from Crowdin
+---------------------------------------------------------------------------------------------------
 Version: 0.0.5
 Date: 09MAY2022
   Changes:
