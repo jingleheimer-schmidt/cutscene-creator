@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.6
-Date: 24SEP2024
+Date: 12OCT2024
   Changes:
     - standardized code formatting
     - updated mod description
