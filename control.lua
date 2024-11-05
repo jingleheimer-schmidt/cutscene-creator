@@ -16,39 +16,29 @@ local function set_cutscene_controller(created_waypoints, player)
     storage.number_of_waypoints[player.index] = #created_waypoints
 end
 
-local function get_train_entity(train_unit_number, player_index)
-    local table_of_trains = game.get_player(player_index).surface.get_trains()
-    for a, b in pairs(table_of_trains) do
-        local fronts = b.locomotives.front_movers
-        local backs = b.locomotives.back_movers
-        for c, d in pairs(fronts) do
-            if d.unit_number == train_unit_number then
-                return d
-            else
-                -- game.print("no front movers")
-            end
-        end
-        for e, f in pairs(backs) do
-            if f.unit_number == train_unit_number then
-                return f
-            else
-                -- game.print("no back movers")
-            end
 ---@param train_id integer
 ---@return LuaEntity?
+local function get_train_target(train_id)
+    local rolling_stock = game.get_entity_by_unit_number(train_id)
+    local train = rolling_stock and rolling_stock.train
+    if train then
+        local front_stock = train.front_stock
+        local back_stock = train.back_stock
+        if train.speed >= 0 then
+            return front_stock
+        else
+            return back_stock
         end
     end
 end
 
-local function get_station_entity(station_unit_number, player_index)
-    local table_of_stations = game.get_train_stops({ surface = game.get_player(player_index).surface })
-    for a, b in pairs(table_of_stations) do
-        if b.unit_number == station_unit_number then
-            return b
-        else
-            -- game.print("no such station")
 ---@param station_unit_number integer
 ---@return LuaEntity?
+local function get_station_target(station_unit_number)
+    local stations = game.train_manager.get_train_stops { unit_number = station_unit_number }
+    for _, station in pairs(stations) do
+        if station.unit_number == station_unit_number then
+            return station
         end
     end
 end
@@ -67,8 +57,8 @@ local function create_waypoints_combo(parameter, player_index)
     local z = "zoom=" .. player.mod_settings["cc-zoom"].value
     parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
     parameter = parameter:gsub("gps=", "position={")
-    parameter = parameter:gsub("train=", "target=get_train_entity{")
-    parameter = parameter:gsub("train%-stop=", "target=get_station_entity{")
+    parameter = parameter:gsub("train=", "target=get_train_target{")
+    parameter = parameter:gsub("train%-stop=", "target=get_station_target{")
     parameter = parameter:gsub("tt", ",transition_time=")
     parameter = parameter:gsub("wt", ",time_to_wait=")
     parameter = parameter:gsub("z", ",zoom=")
@@ -80,7 +70,7 @@ local function create_waypoints_combo(parameter, player_index)
     parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
     parameter = parameter:gsub("%{(%d*)%}", "(%1,player_index)")
     local proc, errmsg = load('local waypoints={' .. parameter .. '} return waypoints', "bad_waypoints", "t",
-        { get_train_entity = get_train_entity, player_index = player_index, get_station_entity = get_station_entity })
+        { get_train_target = get_train_target, player_index = player_index, get_station_target = get_station_target })
     if proc then
         local status, result = pcall(proc)
         if status then
