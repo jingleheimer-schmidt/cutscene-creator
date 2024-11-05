@@ -88,11 +88,6 @@ function play_cutscene(command)
         end
     end
 end
---
--- function sync_color(player_index)
---   local player = game.get_player(player_index)
---   player.character.color = player.color
--- end
 
 function create_cutscene(created_waypoints, player)
     -- local player = game.get_player(player_index)
