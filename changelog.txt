@@ -2,6 +2,9 @@
 Version: 0.0.7
 Date: ????
   Changes:
+    - added support for Factorio 2.0
+  Locale:
+    - updated Ukrainian (uk) locale from Crowdin
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.6
 Date: 12OCT2024
