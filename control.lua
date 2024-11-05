@@ -118,16 +118,17 @@ end
 
 ---@param command CustomCommandData
 local function play_cutscene(command)
+    if not (command.name == "cutscene") then return end
     local player_index = command.player_index
+    if not player_index then return end
     local player = game.get_player(player_index)
-    local parameter = command.parameter
-    local name = command.name
     if not (player and player.valid) then return end
     if player.controller_type == defines.controllers.cutscene then
         player.print({ "cc-messages.wait-thats-illegal" })
         return
     end
-    if (parameter == nil) then
+    local parameter = command.parameter
+    if not parameter then
         player.print({ "cc-messages.invalid-no-waypoints" })
         return
     end
