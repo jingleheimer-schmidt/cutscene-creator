@@ -7,7 +7,7 @@ local function set_cutscene_controller(created_waypoints, player)
         type = defines.controllers.cutscene,
         waypoints = created_waypoints,
         start_position = player.position,
-        final_transition_time = player.mod_settings["cc-transition-time"].value
+        final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]]
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
     storage.cc_status = storage.cc_status or {}
@@ -34,6 +34,8 @@ local function get_train_entity(train_unit_number, player_index)
             else
                 -- game.print("no back movers")
             end
+---@param train_id integer
+---@return LuaEntity?
         end
     end
 end
@@ -45,11 +47,16 @@ local function get_station_entity(station_unit_number, player_index)
             return b
         else
             -- game.print("no such station")
+---@param station_unit_number integer
+---@return LuaEntity?
         end
     end
 end
 
 local function create_waypoints_combo(parameter, player_index)
+---@param parameter string
+---@param player_index integer
+---@return CutsceneWaypoint[]?
     -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
     -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
     local waypoints = {}
@@ -87,6 +94,10 @@ local function create_waypoints_combo(parameter, player_index)
     end
 end
 
+---@param waypoint CutsceneWaypoint
+---@return boolean valid
+---@return LocalisedString? error_message
+---@param command CustomCommandData
 local function play_cutscene(command)
     local player_index = command.player_index
     local player = game.get_player(player_index)
@@ -136,6 +147,7 @@ local function play_cutscene(command)
     end
 end
 
+---@param command CustomCommandData
 local function end_cutscene(command)
     local player = game.get_player(command.player_index)
     if not (player and player.valid) then return end
