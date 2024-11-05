@@ -1,6 +1,8 @@
 
-local function create_cutscene(created_waypoints, player)
     -- local player = game.get_player(player_index)
+---@param created_waypoints CutsceneWaypoint[]
+---@param player LuaPlayer
+local function set_cutscene_controller(created_waypoints, player)
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
         type = defines.controllers.cutscene,
@@ -133,7 +135,7 @@ local function play_cutscene(command)
             end
             -- sync_color(player_index)
             -- create_cutscene(created_waypoints, player)
-            local status, result = pcall(create_cutscene, created_waypoints, player)
+            local status, result = pcall(set_cutscene_controller, created_waypoints, player)
             if not status then
                 player.print({ "cc-messages.invalid-waypoints-error-message", result })
             end
