@@ -43,10 +43,10 @@ local function get_station_target(station_unit_number)
     end
 end
 
-local function create_waypoints_combo(parameter, player_index)
 ---@param parameter string
 ---@param player_index integer
 ---@return CutsceneWaypoint[]?
+local function create_waypoints_from_string(parameter, player_index)
     -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
     -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
     local waypoints = {}
