@@ -1,46 +1,100 @@
 
-script.on_init(function()
-    add_commands()
-end)
-
-script.on_load(function()
-    add_commands()
-end)
-
-function add_commands()
-    commands.add_command("cutscene", { "cc-command-help.play-cutscene-help" }, play_cutscene)
-    commands.add_command("end-cutscene", { "cc-command-help.end-cutscene-help" }, end_cutscene)
+local function create_cutscene(created_waypoints, player)
+    -- local player = game.get_player(player_index)
+    local transfer_alt_mode = player.game_view_settings.show_entity_info
+    player.set_controller {
+        type = defines.controllers.cutscene,
+        waypoints = created_waypoints,
+        start_position = player.position,
+        final_transition_time = player.mod_settings["cc-transition-time"].value
+    }
+    player.game_view_settings.show_entity_info = transfer_alt_mode
+    if not storage.cc_status then
+        storage.cc_status = {}
+        storage.cc_status[player.index] = "active"
+    else
+        storage.cc_status[player.index] = "active"
+    end
+    if not storage.number_of_waypoints then
+        storage.number_of_waypoints = {}
+        storage.number_of_waypoints[player.index] = #created_waypoints
+    else
+        storage.number_of_waypoints[player.index] = #created_waypoints
+    end
 end
 
-function end_cutscene(command)
-    local player = game.get_player(command.player_index)
-    if not (player and player.valid) then return end
-    if ((player.controller_type == defines.controllers.cutscene) and (storage.cc_status) and (storage.cc_status[command.player_index]) and (storage.cc_status[command.player_index] == "active")) then
-        player.exit_cutscene()
-        if storage.cc_status then
-            storage.cc_status[player.index] = "inactive"
+local function get_train_entity(train_unit_number, player_index)
+    local table_of_trains = game.get_player(player_index).surface.get_trains()
+    for a, b in pairs(table_of_trains) do
+        local fronts = b.locomotives.front_movers
+        local backs = b.locomotives.back_movers
+        for c, d in pairs(fronts) do
+            if d.unit_number == train_unit_number then
+                return d
+            else
+                -- game.print("no front movers")
+            end
         end
-        if storage.number_of_waypoints then
-            storage.number_of_waypoints[player.index] = nil
+        for e, f in pairs(backs) do
+            if f.unit_number == train_unit_number then
+                return f
+            else
+                -- game.print("no back movers")
+            end
+        end
+    end
+end
+
+local function get_station_entity(station_unit_number, player_index)
+    local table_of_stations = game.get_train_stops({ surface = game.get_player(player_index).surface })
+    for a, b in pairs(table_of_stations) do
+        if b.unit_number == station_unit_number then
+            return b
+        else
+            -- game.print("no such station")
+        end
+    end
+end
+
+local function create_waypoints_combo(parameter, player_index)
+    -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
+    -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
+    local waypoints = {}
+    local player = game.get_player(player_index)
+    if not (player and player.valid) then return end
+    local tt = "transition_time=" .. player.mod_settings["cc-transition-time"].value
+    local wt = "time_to_wait=" .. player.mod_settings["cc-time-wait"].value
+    local z = "zoom=" .. player.mod_settings["cc-zoom"].value
+    parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
+    parameter = parameter:gsub("gps=", "position={")
+    parameter = parameter:gsub("train=", "target=get_train_entity{")
+    parameter = parameter:gsub("train%-stop=", "target=get_station_entity{")
+    parameter = parameter:gsub("tt", ",transition_time=")
+    parameter = parameter:gsub("wt", ",time_to_wait=")
+    parameter = parameter:gsub("z", ",zoom=")
+    parameter = parameter:gsub("%{position", "},{position")
+    parameter = parameter:gsub("%{target", "},{target")
+    parameter = parameter:gsub("%}%,", "", 1)
+    parameter = parameter:gsub("%}%{", "}}, {")
+    parameter = parameter .. "}"
+    parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
+    parameter = parameter:gsub("%{(%d*)%}", "(%1,player_index)")
+    local proc, errmsg = load('local waypoints={' .. parameter .. '} return waypoints', "bad_waypoints", "t",
+        { get_train_entity = get_train_entity, player_index = player_index, get_station_entity = get_station_entity })
+    if proc then
+        local status, result = pcall(proc)
+        if status then
+            waypoints = result
+            return waypoints
+        else
+            -- game.print("pcall failed: "..result)
         end
     else
-        -- player.print("No cutscene currently playing")
+        -- game.print("load failed: "..errmsg)
     end
 end
 
-script.on_event(defines.events.on_cutscene_waypoint_reached, function(event)
-    -- game.print("arrived at: waypoint " .. event.waypoint_index)
-    if storage.cc_status and storage.cc_status[event.player_index] and (storage.cc_status[event.player_index] == "active") then
-        -- game.print("cc_status is: " .. storage.cc_status[event.player_index])
-        if storage.number_of_waypoints and storage.number_of_waypoints[event.player_index] and (storage.number_of_waypoints[event.player_index] == event.waypoint_index) then
-            storage.cc_status[event.player_index] = "inactive"
-            storage.number_of_waypoints[event.player_index] = nil
-            -- game.print("cc_status set to: " .. storage.cc_status[event.player_index])
-        end
-    end
-end)
-
-function play_cutscene(command)
+local function play_cutscene(command)
     local player_index = command.player_index
     local player = game.get_player(player_index)
     local parameter = command.parameter
@@ -89,100 +143,44 @@ function play_cutscene(command)
     end
 end
 
-function create_cutscene(created_waypoints, player)
-    -- local player = game.get_player(player_index)
-    local transfer_alt_mode = player.game_view_settings.show_entity_info
-    player.set_controller {
-        type = defines.controllers.cutscene,
-        waypoints = created_waypoints,
-        start_position = player.position,
-        final_transition_time = player.mod_settings["cc-transition-time"].value
-    }
-    player.game_view_settings.show_entity_info = transfer_alt_mode
-    if not storage.cc_status then
-        storage.cc_status = {}
-        storage.cc_status[player.index] = "active"
-    else
-        storage.cc_status[player.index] = "active"
-    end
-    if not storage.number_of_waypoints then
-        storage.number_of_waypoints = {}
-        storage.number_of_waypoints[player.index] = #created_waypoints
-    else
-        storage.number_of_waypoints[player.index] = #created_waypoints
-    end
-end
-
-function get_train_entity(train_unit_number, player_index)
-    local table_of_trains = game.get_player(player_index).surface.get_trains()
-    for a, b in pairs(table_of_trains) do
-        local fronts = b.locomotives.front_movers
-        local backs = b.locomotives.back_movers
-        for c, d in pairs(fronts) do
-            if d.unit_number == train_unit_number then
-                return d
-            else
-                -- game.print("no front movers")
-            end
-        end
-        for e, f in pairs(backs) do
-            if f.unit_number == train_unit_number then
-                return f
-            else
-                -- game.print("no back movers")
-            end
-        end
-    end
-end
-
-function get_station_entity(station_unit_number, player_index)
-    local table_of_stations = game.get_train_stops({ surface = game.get_player(player_index).surface })
-    for a, b in pairs(table_of_stations) do
-        if b.unit_number == station_unit_number then
-            return b
-        else
-            -- game.print("no such station")
-        end
-    end
-end
-
-function create_waypoints_combo(parameter, player_index)
-    -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
-    -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
-    local waypoints = {}
-    local player = game.get_player(player_index)
+local function end_cutscene(command)
+    local player = game.get_player(command.player_index)
     if not (player and player.valid) then return end
-    local tt = "transition_time=" .. player.mod_settings["cc-transition-time"].value
-    local wt = "time_to_wait=" .. player.mod_settings["cc-time-wait"].value
-    local z = "zoom=" .. player.mod_settings["cc-zoom"].value
-    parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
-    parameter = parameter:gsub("gps=", "position={")
-    parameter = parameter:gsub("train=", "target=get_train_entity{")
-    parameter = parameter:gsub("train%-stop=", "target=get_station_entity{")
-    parameter = parameter:gsub("tt", ",transition_time=")
-    parameter = parameter:gsub("wt", ",time_to_wait=")
-    parameter = parameter:gsub("z", ",zoom=")
-    parameter = parameter:gsub("%{position", "},{position")
-    parameter = parameter:gsub("%{target", "},{target")
-    parameter = parameter:gsub("%}%,", "", 1)
-    parameter = parameter:gsub("%}%{", "}}, {")
-    parameter = parameter .. "}"
-    parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
-    parameter = parameter:gsub("%{(%d*)%}", "(%1,player_index)")
-    local proc, errmsg = load('local waypoints={' .. parameter .. '} return waypoints', "bad_waypoints", "t",
-        { get_train_entity = get_train_entity, player_index = player_index, get_station_entity = get_station_entity })
-    if proc then
-        local status, result = pcall(proc)
-        if status then
-            waypoints = result
-            return waypoints
-        else
-            -- game.print("pcall failed: "..result)
+    if ((player.controller_type == defines.controllers.cutscene) and (storage.cc_status) and (storage.cc_status[command.player_index]) and (storage.cc_status[command.player_index] == "active")) then
+        player.exit_cutscene()
+        if storage.cc_status then
+            storage.cc_status[player.index] = "inactive"
+        end
+        if storage.number_of_waypoints then
+            storage.number_of_waypoints[player.index] = nil
         end
     else
-        -- game.print("load failed: "..errmsg)
+        -- player.print("No cutscene currently playing")
     end
 end
+
+local function add_commands()
+    commands.add_command("cutscene", { "cc-command-help.play-cutscene-help" }, play_cutscene)
+    commands.add_command("end-cutscene", { "cc-command-help.end-cutscene-help" }, end_cutscene)
+end
+
+script.on_init(add_commands)
+script.on_load(add_commands)
+
+---@param event EventData.on_cutscene_waypoint_reached
+local function on_cutscene_waypoint_reached(event)
+    -- game.print("arrived at: waypoint " .. event.waypoint_index)
+    if storage.cc_status and storage.cc_status[event.player_index] and (storage.cc_status[event.player_index] == "active") then
+        -- game.print("cc_status is: " .. storage.cc_status[event.player_index])
+        if storage.number_of_waypoints and storage.number_of_waypoints[event.player_index] and (storage.number_of_waypoints[event.player_index] == event.waypoint_index) then
+            storage.cc_status[event.player_index] = "inactive"
+            storage.number_of_waypoints[event.player_index] = nil
+            -- game.print("cc_status set to: " .. storage.cc_status[event.player_index])
+        end
+    end
+end
+
+script.on_event(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
