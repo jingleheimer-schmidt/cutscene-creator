@@ -97,6 +97,25 @@ end
 ---@param waypoint CutsceneWaypoint
 ---@return boolean valid
 ---@return LocalisedString? error_message
+local function validate_waypoint(waypoint)
+    if not (waypoint.target or waypoint.position) then
+        return false, { "cc-messages.invalid-no-target" }
+    end
+    local position = waypoint.position
+    if position then
+        if (position[1] < -1000000 or position[1] > 1000000 or position[2] < -1000000 or position[2] > 1000000) then
+            return false, { "cc-messages.invalid-coordinates" }
+        end
+    end
+    if not waypoint.transition_time then
+        return false, { "cc-messages.invalid-no-transition-time" }
+    end
+    if not waypoint.time_to_wait then
+        return false, { "cc-messages.invalid-no-wait-time" }
+    end
+    return true
+end
+
 ---@param command CustomCommandData
 local function play_cutscene(command)
     local player_index = command.player_index
@@ -112,38 +131,21 @@ local function play_cutscene(command)
         player.print({ "cc-messages.invalid-no-waypoints" })
         return
     end
-    if ((name == "cutscene") and player.valid) then
-        local created_waypoints = create_waypoints_combo(parameter, player_index)
-        if created_waypoints then
-            for a, b in pairs(created_waypoints) do
-                if not (b.target or b.position) then
-                    player.print({ "cc-messages.invalid-no-target" })
-                    return
-                end
-                if b.position then
-                    if (b.position[1] < -1000000 or b.position[1] > 1000000 or b.position[2] < -1000000 or b.position[2] > 1000000) then
-                        player.print({ "cc-messages.invalid-coordinates" })
-                        return
-                    end
-                end
-                if not b.transition_time then
-                    player.print({ "cc-messages.invalid-no-transition-time" })
-                    return
-                end
-                if not b.time_to_wait then
-                    player.print({ "cc-messages.invalid-no-wait-time" })
-                    return
-                end
+    local created_waypoints = create_waypoints_from_string(parameter, player_index)
+    if created_waypoints then
+        for _, waypoint in pairs(created_waypoints) do
+            local valid, error_message = validate_waypoint(waypoint)
+            if not valid then
+                player.print(error_message)
+                return
             end
-            -- sync_color(player_index)
-            -- create_cutscene(created_waypoints, player)
-            local status, result = pcall(set_cutscene_controller, created_waypoints, player)
-            if not status then
-                player.print({ "cc-messages.invalid-waypoints-error-message", result })
-            end
-        else
-            player.print({ "cc-messages.invalid-waypoints" })
         end
+        local status, result = pcall(set_cutscene_controller, created_waypoints, player)
+        if not status then
+            player.print({ "cc-messages.invalid-waypoints-error-message", result })
+        end
+    else
+        player.print({ "cc-messages.invalid-waypoints" })
     end
 end
 
