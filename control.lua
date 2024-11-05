@@ -1,5 +1,4 @@
 
-    -- local player = game.get_player(player_index)
 ---@param created_waypoints CutsceneWaypoint[]
 ---@param player LuaPlayer
 local function set_cutscene_controller(created_waypoints, player)
@@ -11,18 +10,10 @@ local function set_cutscene_controller(created_waypoints, player)
         final_transition_time = player.mod_settings["cc-transition-time"].value
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
-    if not storage.cc_status then
-        storage.cc_status = {}
-        storage.cc_status[player.index] = "active"
-    else
-        storage.cc_status[player.index] = "active"
-    end
-    if not storage.number_of_waypoints then
-        storage.number_of_waypoints = {}
-        storage.number_of_waypoints[player.index] = #created_waypoints
-    else
-        storage.number_of_waypoints[player.index] = #created_waypoints
-    end
+    storage.cc_status = storage.cc_status or {}
+    storage.cc_status[player.index] = "active"
+    storage.number_of_waypoints = storage.number_of_waypoints or {}
+    storage.number_of_waypoints[player.index] = #created_waypoints
 end
 
 local function get_train_entity(train_unit_number, player_index)
