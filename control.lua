@@ -15,13 +15,13 @@ end
 function end_cutscene(command)
     local player = game.get_player(command.player_index)
     if not (player and player.valid) then return end
-    if ((player.controller_type == defines.controllers.cutscene) and (global.cc_status) and (global.cc_status[command.player_index]) and (global.cc_status[command.player_index] == "active")) then
+    if ((player.controller_type == defines.controllers.cutscene) and (storage.cc_status) and (storage.cc_status[command.player_index]) and (storage.cc_status[command.player_index] == "active")) then
         player.exit_cutscene()
-        if global.cc_status then
-            global.cc_status[player.index] = "inactive"
+        if storage.cc_status then
+            storage.cc_status[player.index] = "inactive"
         end
-        if global.number_of_waypoints then
-            global.number_of_waypoints[player.index] = nil
+        if storage.number_of_waypoints then
+            storage.number_of_waypoints[player.index] = nil
         end
     else
         -- player.print("No cutscene currently playing")
@@ -30,12 +30,12 @@ end
 
 script.on_event(defines.events.on_cutscene_waypoint_reached, function(event)
     -- game.print("arrived at: waypoint " .. event.waypoint_index)
-    if global.cc_status and global.cc_status[event.player_index] and (global.cc_status[event.player_index] == "active") then
-        -- game.print("cc_status is: " .. global.cc_status[event.player_index])
-        if global.number_of_waypoints and global.number_of_waypoints[event.player_index] and (global.number_of_waypoints[event.player_index] == event.waypoint_index) then
-            global.cc_status[event.player_index] = "inactive"
-            global.number_of_waypoints[event.player_index] = nil
-            -- game.print("cc_status set to: " .. global.cc_status[event.player_index])
+    if storage.cc_status and storage.cc_status[event.player_index] and (storage.cc_status[event.player_index] == "active") then
+        -- game.print("cc_status is: " .. storage.cc_status[event.player_index])
+        if storage.number_of_waypoints and storage.number_of_waypoints[event.player_index] and (storage.number_of_waypoints[event.player_index] == event.waypoint_index) then
+            storage.cc_status[event.player_index] = "inactive"
+            storage.number_of_waypoints[event.player_index] = nil
+            -- game.print("cc_status set to: " .. storage.cc_status[event.player_index])
         end
     end
 end)
@@ -104,17 +104,17 @@ function create_cutscene(created_waypoints, player)
         final_transition_time = player.mod_settings["cc-transition-time"].value
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
-    if not global.cc_status then
-        global.cc_status = {}
-        global.cc_status[player.index] = "active"
+    if not storage.cc_status then
+        storage.cc_status = {}
+        storage.cc_status[player.index] = "active"
     else
-        global.cc_status[player.index] = "active"
+        storage.cc_status[player.index] = "active"
     end
-    if not global.number_of_waypoints then
-        global.number_of_waypoints = {}
-        global.number_of_waypoints[player.index] = #created_waypoints
+    if not storage.number_of_waypoints then
+        storage.number_of_waypoints = {}
+        storage.number_of_waypoints[player.index] = #created_waypoints
     else
-        global.number_of_waypoints[player.index] = #created_waypoints
+        storage.number_of_waypoints[player.index] = #created_waypoints
     end
 end
 
@@ -191,8 +191,8 @@ end
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
-    if global.cc_status and global.cc_status[player_index] then
-        return global.cc_status[player_index]
+    if storage.cc_status and storage.cc_status[player_index] then
+        return storage.cc_status[player_index]
     end
 end
 
