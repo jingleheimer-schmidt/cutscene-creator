@@ -52,9 +52,10 @@ local function create_waypoints_from_string(parameter, player_index)
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
-    local tt = "transition_time=" .. player.mod_settings["cc-transition-time"].value
-    local wt = "time_to_wait=" .. player.mod_settings["cc-time-wait"].value
-    local z = "zoom=" .. player.mod_settings["cc-zoom"].value
+    local mod_settings = player.mod_settings
+    local tt = "transition_time=" .. mod_settings["cc-transition-time"].value
+    local wt = "time_to_wait=" .. mod_settings["cc-time-wait"].value
+    local z = "zoom=" .. mod_settings["cc-zoom"].value
     parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
     parameter = parameter:gsub("gps=", "position={")
     parameter = parameter:gsub("train=", "target=get_train_target{")
