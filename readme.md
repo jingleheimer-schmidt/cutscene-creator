@@ -1,6 +1,6 @@
 Adds a command to create custom cutscenes.
-- Use /cutscene and shift-click anywhere on the map to specify waypoints. Additional settings for transition time, waiting time, and zoom can be adjusted in mod settings.
-- Use /end-cutscene to end a cutscene early and immediately return control to the player.
+- Use `/cutscene` and shift-click anywhere on the map to specify waypoints. Additional settings for transition time, waiting time, and zoom can be adjusted in mod settings.
+- Use `/end-cutscene` to end a cutscene early and immediately return control to the player.
 
 Shift-click on trains and train stations to add them as waypoints too!
 
