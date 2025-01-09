@@ -72,7 +72,8 @@ local function create_waypoints_from_string(parameter, player_index)
     local tt = "transition_time=" .. mod_settings["cc-transition-time"].value
     local wt = "time_to_wait=" .. mod_settings["cc-time-wait"].value
     local z = "zoom=" .. mod_settings["cc-zoom"].value
-    parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
+    parameter = parameter:gsub("%s*", "")
+    parameter = parameter:gsub("%[", "{"):gsub("%]", "}")
     parameter = parameter:gsub("gps=", "position={")
     parameter = parameter:gsub("train=", "target=get_train_target{")
     parameter = parameter:gsub("train%-stop=", "target=get_station_target{")
