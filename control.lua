@@ -53,8 +53,11 @@ local function check_parameter_for_surface_mismatch(parameter, player)
     end
     local player_surface = player.surface.name
     for surface_name, _ in pairs(surface_names) do
-        if (surface_name ~= player_surface) and string.find(parameter, surface_name) then
-            player.print({ "cc-messages.surface-mismatch", surface_name })
+        if (surface_name ~= player_surface) and string.find(parameter, "," .. surface_name) then
+            storage.mismatch_message_shown = storage.mismatch_message_shown or {}
+            if storage.mismatch_message_shown[player.index] then return true end
+            player.print({ "cc-messages.surface-mismatch", "[planet=" .. surface_name .. "]", "[color=" .. player.color.r .. "," .. player.color.g .. "," .. player.color.b .. "][Character: " .. player.name .. "][/color]", "[planet=" .. player_surface .. "]" })
+            storage.mismatch_message_shown[player.index] = true
             return true
         end
     end
