@@ -44,6 +44,22 @@ local function get_station_target(station_unit_number)
 end
 
 ---@param parameter string
+---@param player LuaPlayer
+local function check_parameter_for_surface_mismatch(parameter, player)
+    local surface_names = {}
+    for _, surface in pairs(game.surfaces) do
+        surface_names[surface.name] = true
+    end
+    local player_surface = player.surface.name
+    for surface_name, _ in pairs(surface_names) do
+        if (surface_name ~= player_surface) and string.find(parameter, surface_name) then
+            player.print({ "cc-messages.surface-mismatch", surface_name })
+            return
+        end
+    end
+end
+
+---@param parameter string
 ---@param player_index integer
 ---@return CutsceneWaypoint[]?
 local function create_waypoints_from_string(parameter, player_index)
