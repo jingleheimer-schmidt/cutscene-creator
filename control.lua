@@ -73,39 +73,45 @@ local function create_waypoints_from_string(parameter, player_index)
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
-    check_parameter_for_surface_mismatch(parameter, player)
+    local mismatch = check_parameter_for_surface_mismatch(parameter, player)
     local mod_settings = player.mod_settings
-    local tt = "transition_time=" .. mod_settings["cc-transition-time"].value
-    local wt = "time_to_wait=" .. mod_settings["cc-time-wait"].value
-    local z = "zoom=" .. mod_settings["cc-zoom"].value
-    parameter = parameter:gsub("%s*", "")
-    parameter = parameter:gsub("%[", "{"):gsub("%]", "}")
-    parameter = parameter:gsub("gps=", "position={")
-    parameter = parameter:gsub("train=", "target=get_train_target{")
-    parameter = parameter:gsub("train%-stop=", "target=get_station_target{")
-    parameter = parameter:gsub("tt", ",transition_time=")
-    parameter = parameter:gsub("wt", ",time_to_wait=")
-    parameter = parameter:gsub("z", ",zoom=")
-    parameter = parameter:gsub("%{position", "},{position")
-    parameter = parameter:gsub("%{target", "},{target")
-    parameter = parameter:gsub("%}%,", "", 1)
-    parameter = parameter:gsub("%}%{", "}}, {")
-    parameter = parameter .. "}"
-    parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
-    parameter = parameter:gsub("%{(%d*)%}", "(%1)")
-    local chunk = "local waypoints = { " .. parameter .. " } return waypoints"
-    local proc, errmsg = load(chunk, "bad_waypoints", "t", { get_train_target = get_train_target, get_station_target = get_station_target })
-    if proc then
-        local status, result = pcall(proc)
-        if status then
-            waypoints = result
-            return waypoints
-        else
-            -- game.print("pcall failed: "..result)
+    parameter = parameter:gsub("%s*", "") -- remove all whitespace
+    parameter = parameter .. "[" -- add a bracket to the end of the string for the final match
+    for key, value, options in parameter:gmatch("%[([^=]+)=([^%]]+)%]([^[]*)") do
+        key, value, options = tostring(key), tostring(value), tostring(options)
+        local waypoint = {}
+        if key == "gps" then
+            local x, y, surface = value:match("([^,]+),([^,]+),?(.*)")
+            if x and y then
+                x, y = tonumber(x), tonumber(y)
+                waypoint.position = { x, y }
+            end
+        elseif key == "train" then
+            local train_id = tonumber(value)
+            if train_id then
+                local train = get_train_target(train_id)
+                if train then
+                    waypoint.target = train
+                end
+            end
+        elseif key == "train-stop" then
+            local station_unit_number = tonumber(value)
+            if station_unit_number then
+                local station = get_station_target(station_unit_number)
+                if station then
+                    waypoint.target = station
+                end
+            end
         end
-    else
-        -- game.print("load failed: "..errmsg)
+        local transition = options:match("transition([%d%.]*)") or options:match("tt([%d%.]*)")
+        local wait = options:match("wait([%d%.]*)") or options:match("wt([%d%.]*)")
+        local zoom = options:match("zoom([%d%.]*)") or options:match("z([%d%.]*)")
+        waypoint.transition_time = transition and tonumber(transition) or mod_settings["cc-transition-time"].value
+        waypoint.time_to_wait = wait and tonumber(wait) or mod_settings["cc-time-wait"].value
+        waypoint.zoom = zoom and tonumber(zoom) or mod_settings["cc-zoom"].value
+        table.insert(waypoints, waypoint)
     end
+    return waypoints
 end
 
 ---@param waypoint CutsceneWaypoint
