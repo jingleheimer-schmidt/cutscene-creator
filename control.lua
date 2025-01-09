@@ -87,8 +87,8 @@ local function create_waypoints_from_string(parameter, player_index)
     parameter = parameter .. "}"
     parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
     parameter = parameter:gsub("%{(%d*)%}", "(%1)")
-    local proc, errmsg = load('local waypoints={' .. parameter .. '} return waypoints', "bad_waypoints", "t",
-        { get_train_target = get_train_target, get_station_target = get_station_target })
+    local chunk = "local waypoints = { " .. parameter .. " } return waypoints"
+    local proc, errmsg = load(chunk, "bad_waypoints", "t", { get_train_target = get_train_target, get_station_target = get_station_target })
     if proc then
         local status, result = pcall(proc)
         if status then
