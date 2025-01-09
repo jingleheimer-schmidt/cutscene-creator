@@ -1,19 +1,19 @@
 
 local transitionTimeSetting = {
-    type = "int-setting",
+    type = "double-setting",
     name = "cc-transition-time",
     setting_type = "runtime-per-user",
-    minimum_value = 1,
-    default_value = 120,
+    minimum_value = 0,
+    default_value = 2,
     order = "cc-1"
 }
 
 local timeWaitSetting = {
-    type = "int-setting",
+    type = "double-setting",
     name = "cc-time-wait",
     setting_type = "runtime-per-user",
-    minimum_value = 1,
-    default_value = 60,
+    minimum_value = 0,
+    default_value = 1,
     order = "cc-2"
 }
 

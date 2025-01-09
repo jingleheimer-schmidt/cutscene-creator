@@ -7,7 +7,7 @@ local function set_cutscene_controller(created_waypoints, player)
         type = defines.controllers.cutscene,
         waypoints = created_waypoints,
         start_position = player.position,
-        final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]]
+        final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
     storage.cc_status = storage.cc_status or {}
@@ -106,8 +106,8 @@ local function create_waypoints_from_string(parameter, player_index)
         local transition = options:match("transition([%d%.]*)") or options:match("tt([%d%.]*)")
         local wait = options:match("wait([%d%.]*)") or options:match("wt([%d%.]*)")
         local zoom = options:match("zoom([%d%.]*)") or options:match("z([%d%.]*)")
-        waypoint.transition_time = transition and tonumber(transition) or mod_settings["cc-transition-time"].value
-        waypoint.time_to_wait = wait and tonumber(wait) or mod_settings["cc-time-wait"].value
+        waypoint.transition_time = (transition and tonumber(transition) or mod_settings["cc-transition-time"].value) * 60
+        waypoint.time_to_wait = (wait and tonumber(wait) or mod_settings["cc-time-wait"].value) * 60
         waypoint.zoom = zoom and tonumber(zoom) or mod_settings["cc-zoom"].value
         table.insert(waypoints, waypoint)
     end
