@@ -69,7 +69,7 @@ end
 ---@return CutsceneWaypoint[]?
 local function create_waypoints_from_string(parameter, player_index)
     -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38]"
-    -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
+    -- local parameter = "[gps=1,1][train=22]t22 w22 z.22[train-stop=333] transition 300 wait 333 zoom 0.333 [gps=4444,4444,nauvis][gps=55555,55555]    z0.55555  wait55555 t55555  "
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
