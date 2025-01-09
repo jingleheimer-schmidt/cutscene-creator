@@ -45,6 +45,7 @@ end
 
 ---@param parameter string
 ---@param player LuaPlayer
+---@return boolean
 local function check_parameter_for_surface_mismatch(parameter, player)
     local surface_names = {}
     for _, surface in pairs(game.surfaces) do
@@ -54,9 +55,10 @@ local function check_parameter_for_surface_mismatch(parameter, player)
     for surface_name, _ in pairs(surface_names) do
         if (surface_name ~= player_surface) and string.find(parameter, surface_name) then
             player.print({ "cc-messages.surface-mismatch", surface_name })
-            return
+            return true
         end
     end
+    return false
 end
 
 ---@param parameter string
