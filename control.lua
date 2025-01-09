@@ -68,6 +68,7 @@ local function create_waypoints_from_string(parameter, player_index)
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
+    check_parameter_for_surface_mismatch(parameter, player)
     local mod_settings = player.mod_settings
     local tt = "transition_time=" .. mod_settings["cc-transition-time"].value
     local wt = "time_to_wait=" .. mod_settings["cc-time-wait"].value
