@@ -13,6 +13,7 @@
 ---@param player LuaPlayer
 local function set_cutscene_controller(waypoints, player)
     local player_index = player.index
+    -- since cutscenes can't be created for players in remote view, stash their data in storage and temporarily set them to spectator
     ---@type table<integer, player_data>
     storage.player_data = storage.player_data or {}
     storage.player_data[player_index] = {
@@ -25,6 +26,8 @@ local function set_cutscene_controller(waypoints, player)
         character = player.character,
         waypoint_count = #waypoints
     }
+    player.set_controller { type = defines.controllers.spectator }
+    player.zoom = storage.player_data[player_index].zoom
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
         type = defines.controllers.cutscene,
@@ -200,20 +203,40 @@ end
 script.on_init(add_commands)
 script.on_load(add_commands)
 
----@param event EventData.on_cutscene_waypoint_reached
-local function on_cutscene_waypoint_reached(event)
-    -- game.print("arrived at: waypoint " .. event.waypoint_index)
-    if storage.cc_status and storage.cc_status[event.player_index] and (storage.cc_status[event.player_index] == "active") then
-        -- game.print("cc_status is: " .. storage.cc_status[event.player_index])
-        if storage.number_of_waypoints and storage.number_of_waypoints[event.player_index] and (storage.number_of_waypoints[event.player_index] == event.waypoint_index) then
-            storage.cc_status[event.player_index] = "inactive"
-            storage.number_of_waypoints[event.player_index] = nil
-            -- game.print("cc_status set to: " .. storage.cc_status[event.player_index])
+---@param event EventData.on_cutscene_finished | EventData.on_cutscene_cancelled
+local function on_cutscene_ended(event)
+    local player_index = event.player_index
+    local player = game.get_player(player_index)
+    if not (player and player.valid) then return end
+    storage.player_data = storage.player_data or {}
+    local player_data = storage.player_data[player_index]
+    if player_data then
+        player.teleport(player_data.physical_position, player_data.physical_surface, true)
+        local character = player_data.character
+        if character and character.valid then
+            player.set_controller {
+                type = defines.controllers.character,
+                character = character,
+            }
+        else
+            player.set_controller {
+                type = defines.controllers.ghost,
+            }
         end
+        if not (player_data.controller_type == defines.controllers.character) then
+            player.set_controller {
+                type = player_data.controller_type,
+                position = player_data.position,
+                surface = player_data.surface,
+            }
+            player.zoom = player_data.zoom
+        end
+        storage.player_data[player_index] = nil
     end
 end
 
-script.on_event(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
+script.on_event(defines.events.on_cutscene_finished, on_cutscene_ended)
+script.on_event(defines.events.on_cutscene_cancelled, on_cutscene_ended)
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
