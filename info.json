@@ -1,7 +1,7 @@
 
 {
 	"name": "cutscene-creator",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"title": "Cutscene Creator",
 	"description": "Adds a command to create custom cutscenes. \nType [color=orange]/cutscene[/color] in chat and shift-click to add position, train, or station waypoints. \nSee mod portal page for documentation of advanced features.",
 	"author": "asher_sky",
