@@ -10,6 +10,27 @@
 ---@field waypoint_count integer
 
 ---@param waypoints CutsceneWaypoint[]
+---@return string
+local function get_intended_cutscene_surface(waypoints)
+    local surface_names = {}
+    for _, waypoint in pairs(waypoints) do
+        if waypoint.surface then
+            if waypoint.surface then
+                surface_names[waypoint.surface] = (surface_names[waypoint.surface] or 0) + 1
+            end
+        end
+    end
+    local max_count, surface_name = 0, "nauvis"
+    for name, count in pairs(surface_names) do
+        if count > max_count then
+            max_count = count
+            surface_name = name
+        end
+    end
+    return surface_name
+end
+
+---@param waypoints CutsceneWaypoint[]
 ---@param player LuaPlayer
 local function set_cutscene_controller(waypoints, player)
     local player_index = player.index
@@ -27,6 +48,7 @@ local function set_cutscene_controller(waypoints, player)
         waypoint_count = #waypoints
     }
     player.set_controller { type = defines.controllers.spectator }
+    player.teleport(player.position, get_intended_cutscene_surface(waypoints), true)
     player.zoom = storage.player_data[player_index].zoom
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
