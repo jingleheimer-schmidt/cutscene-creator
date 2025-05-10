@@ -1,7 +1,16 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: ????
+  Features:
+    - cutscenes can now be started from remote view
+    - cutscenes can now be shown for surfaces other than the one the player is physically on
+    - added toggle-map linked game control to exit a cutscene
   Changes:
+    - overhauled transition time, waiting time, and zoom override tag handling (see mod portal page for documentation)
+    - updated mod description
+    - updated mod thumbnail
+  Locale:
+    - clarified mod setting descriptions and error messages
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.7
 Date: 05NOV2024
