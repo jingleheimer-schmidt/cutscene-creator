@@ -111,7 +111,7 @@ local function create_waypoints_from_string(parameter, player_index)
             if x and y then
                 x, y = tonumber(x), tonumber(y)
                 waypoint.position = { x = x, y = y }
-                waypoint.surface = surface or "nauvis"
+                waypoint.surface = (surface and surface ~= "") and surface or "nauvis"
             end
         elseif key == "train" then
             local train_id = tonumber(value)
@@ -167,6 +167,32 @@ local function validate_waypoint(waypoint)
     return true
 end
 
+---@param player LuaPlayer
+---@param player_data player_data
+local function reset_player_data(player, player_data)
+    player.teleport(player_data.physical_position, player_data.physical_surface, true)
+    local character = player_data.character
+    if character and character.valid then
+        player.set_controller {
+            type = defines.controllers.character,
+            character = character,
+        }
+    else
+        player.set_controller {
+            type = defines.controllers.ghost,
+        }
+    end
+    if not (player_data.controller_type == defines.controllers.character) then
+        player.set_controller {
+            type = player_data.controller_type,
+            position = player_data.position,
+            surface = player_data.surface,
+        }
+        player.zoom = player_data.zoom
+    end
+    storage.player_data[player.index] = nil
+end
+
 ---@param command CustomCommandData
 local function play_cutscene(command)
     if not (command.name == "cutscene") then return end
@@ -195,6 +221,9 @@ local function play_cutscene(command)
         local status, result = pcall(set_cutscene_controller, created_waypoints, player)
         if not status then
             player.print({ "cc-messages.invalid-waypoints-error-message", result })
+            if storage.player_data and storage.player_data[player_index] then
+                reset_player_data(player, storage.player_data[player_index])
+            end
         end
     else
         player.print({ "cc-messages.invalid-waypoints" })
@@ -227,29 +256,7 @@ local function on_cutscene_ended(event)
     if not (player and player.valid) then return end
     storage.player_data = storage.player_data or {}
     local player_data = storage.player_data[player_index]
-    if player_data then
-        player.teleport(player_data.physical_position, player_data.physical_surface, true)
-        local character = player_data.character
-        if character and character.valid then
-            player.set_controller {
-                type = defines.controllers.character,
-                character = character,
-            }
-        else
-            player.set_controller {
-                type = defines.controllers.ghost,
-            }
-        end
-        if not (player_data.controller_type == defines.controllers.character) then
-            player.set_controller {
-                type = player_data.controller_type,
-                position = player_data.position,
-                surface = player_data.surface,
-            }
-            player.zoom = player_data.zoom
-        end
-        storage.player_data[player_index] = nil
-    end
+    if player_data then reset_player_data(player, player_data) end
 end
 
 script.on_event(defines.events.on_cutscene_finished, on_cutscene_ended)
