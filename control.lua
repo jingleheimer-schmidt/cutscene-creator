@@ -201,20 +201,12 @@ local function play_cutscene(command)
     end
 end
 
----@param command CustomCommandData
-local function end_cutscene(command)
-    local player = game.get_player(command.player_index)
+---@param event CustomCommandData | EventData.CustomInputEvent
+local function end_cutscene(event)
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then return end
-    if ((player.controller_type == defines.controllers.cutscene) and (storage.cc_status) and (storage.cc_status[command.player_index]) and (storage.cc_status[command.player_index] == "active")) then
+    if (player.controller_type == defines.controllers.cutscene) then
         player.exit_cutscene()
-        if storage.cc_status then
-            storage.cc_status[player.index] = "inactive"
-        end
-        if storage.number_of_waypoints then
-            storage.number_of_waypoints[player.index] = nil
-        end
-    else
-        -- player.print("No cutscene currently playing")
     end
 end
 
@@ -225,6 +217,8 @@ end
 
 script.on_init(add_commands)
 script.on_load(add_commands)
+
+script.on_event("toggle-map-cutscene-creator", end_cutscene)
 
 ---@param event EventData.on_cutscene_finished | EventData.on_cutscene_cancelled
 local function on_cutscene_ended(event)
