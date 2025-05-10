@@ -22,22 +22,19 @@ You can also use shorthand for the tags: `t`, `w`, and `z`
 
 ![example command image](https://github.com/jingleheimer-schmidt/imgs/raw/primary/cutscene_creator_command_example.png)
 
-`/cutscene [gps=170,142] transition 360 wait 60  [gps=173,132] [train=628270] t180 w600 z0.3 [train-stop=274328]`
+`/cutscene [gps=340.4,-75.4] transition 15 wait 10 [train=628270] t10 [train-stop=274328] z.3, t 5, wait 15`
 
-In the example command pictured above, first the camera will travel from the current player position to 170,142, taking 360 seconds (6 minutes) to travel that distance. It will then wait at 170,142 for 60 seconds (1 minute) before beginning to move to the next waypoint. 
+In the example command pictured above, first the camera will take 15 seconds to travel from the current player position to 340, -75. It will then wait 10 seconds before beginning to move to the next waypoint. 
 
-Because the next waypoint (173,132) does not have any tags after it, cutscene creator will use the values saved in player mod settings to determine transition time, waiting time, and zoom for the waypoint. 
+Because the next waypoint (Train 217) has the shorthand transition tag `t10`, the camera will take 10 seconds to get there. Since no other tags are specified, cutscene creator will use the default values for wait time and zoom level, which are set in player mod settings.
 
-The camera will then take 180 seconds (3 minutes) to travel to the next waypoint, train 217. Because z is specified as 0.3 for this waypoint, the camera will zoom in or out until it reaches that level, depending on what zoom value the previous waypoint had (in this case it was determined by player mod settings). 
-
-After waiting for 10 minutes at the train, the camera will begin moving to the next waypoint, train station "Bilka". This train station waypoint does not have any tags specified, so cutscene creator will again just use the values from player mod settings.  
+The next waypoint is a train stop, "Bilka". The camera will take 5 seconds to get there, zooming out so that the zoom level is 0.3 when it gets to the waypoint. It will then wait for 15 seconds before returning to the starting position.
 
 ------------------
+# Tips and Tricks
 
-Tips and tricks: 
 - The tags must come after the waypoint you want them to affect
 - All tags are optional and can be used in any combination or order
-- If no tags are present, cutscene creator will use the values set in player mod settings for all three
-- It is suggested to open the map view before opening the console to type the command, since you can click and drag the map under the console input to find locations for waypoints that are far away (especially useful when adding trains)
-- If a double-headed train is given as a waypoint, cutscene creator will focus on what factorio internally determines to be the "front" locomotive (typically the first locomotive that was built for that train). Due to limitations with cutscenes and how "front"/"back" locomotives are determined, this means sometimes the locomotive in focus will actually be the one on the back of the train. If you would like cutscene creator to do better job at determining which locomotive is leading the train, please post on the discussion board and I will look into it further.
-- If you have any feature requests post them on the discussion board! 
+- If any tag is not present, cutscene creator will use the value set in player mod settings
+- Try opening the map before opening the console to type the command; you can click and drag the map under the console input to find locations for waypoints that are far away (especially useful when adding trains)
+- Please report any issues or feature requests on the Discussion page
