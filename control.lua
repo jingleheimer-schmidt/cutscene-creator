@@ -1,11 +1,11 @@
 
----@param created_waypoints CutsceneWaypoint[]
+---@param waypoints CutsceneWaypoint[]
 ---@param player LuaPlayer
-local function set_cutscene_controller(created_waypoints, player)
+local function set_cutscene_controller(waypoints, player)
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
         type = defines.controllers.cutscene,
-        waypoints = created_waypoints,
+        waypoints = waypoints,
         start_position = player.position,
         final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60
     }
