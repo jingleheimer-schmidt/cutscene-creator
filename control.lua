@@ -64,7 +64,7 @@ local function create_waypoints_from_string(parameter, player_index)
             local x, y, surface = value:match("([^,]+),([^,]+),?(.*)")
             if x and y then
                 x, y = tonumber(x), tonumber(y)
-                waypoint.position = { x, y }
+                waypoint.position = { x = x, y = y }
             end
         elseif key == "train" then
             local train_id = tonumber(value)
@@ -105,7 +105,7 @@ local function validate_waypoint(waypoint)
     end
     local position = waypoint.position
     if position then
-        if (position[1] < -1000000 or position[1] > 1000000 or position[2] < -1000000 or position[2] > 1000000) then
+        if (position.x < -1000000 or position.x > 1000000 or position.y < -1000000 or position.y > 1000000) then
             return false, { "cc-messages.invalid-coordinates" }
         end
     end
