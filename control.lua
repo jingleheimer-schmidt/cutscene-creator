@@ -44,36 +44,6 @@ local function get_station_target(station_unit_number)
 end
 
 ---@param parameter string
----@param player LuaPlayer
----@return boolean
-local function check_parameter_for_surface_mismatch(parameter, player)
-    local surface_names = {}
-    for _, surface in pairs(game.surfaces) do
-        surface_names[surface.name] = true
-    end
-    local player_surface = player.surface.name
-    for surface_name, _ in pairs(surface_names) do
-        if (surface_name ~= player_surface) and string.find(parameter, "," .. surface_name) then
-            storage.mismatch_message_shown = storage.mismatch_message_shown or {}
-            if storage.mismatch_message_shown[player.index] then return true end
-            player.print({ "cc-messages.surface-mismatch", "[planet=" .. surface_name .. "]", "[color=" .. player.color.r .. "," .. player.color.g .. "," .. player.color.b .. "][Character: " .. player.name .. "][/color]", "[planet=" .. player_surface .. "]" })
-            storage.mismatch_message_shown[player.index] = true
-            return true
-        end
-    end
-    if not (player_surface == "nauvis") then
-        if not string.find(parameter, "," .. player_surface) then
-            storage.mismatch_message_shown = storage.mismatch_message_shown or {}
-            if storage.mismatch_message_shown[player.index] then return true end
-            player.print({ "cc-messages.surface-mismatch", "[planet=" .. player_surface .. "]", "[color=" .. player.color.r .. "," .. player.color.g .. "," .. player.color.b .. "][Character: " .. player.name .. "][/color]", "[planet=nauvis]" })
-            storage.mismatch_message_shown[player.index] = true
-            return true
-        end
-    end
-    return false
-end
-
----@param parameter string
 ---@param player_index integer
 ---@return CutsceneWaypoint[]?
 local function create_waypoints_from_string(parameter, player_index)
@@ -82,7 +52,6 @@ local function create_waypoints_from_string(parameter, player_index)
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
-    local mismatch = check_parameter_for_surface_mismatch(parameter, player)
     local has_a_tag = parameter:find("%[.-]")
     if not has_a_tag then player.print({ "cc-messages.invalid-no-waypoints" }) end
     local mod_settings = player.mod_settings
