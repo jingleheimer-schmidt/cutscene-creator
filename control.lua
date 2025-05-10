@@ -1,7 +1,30 @@
 
+---@class player_data
+---@field position MapPosition
+---@field physical_position MapPosition
+---@field surface SurfaceIdentification
+---@field physical_surface SurfaceIdentification
+---@field zoom number
+---@field controller_type defines.controllers
+---@field character LuaEntity?
+---@field waypoint_count integer
+
 ---@param waypoints CutsceneWaypoint[]
 ---@param player LuaPlayer
 local function set_cutscene_controller(waypoints, player)
+    local player_index = player.index
+    ---@type table<integer, player_data>
+    storage.player_data = storage.player_data or {}
+    storage.player_data[player_index] = {
+        position = player.position,
+        physical_position = player.physical_position,
+        surface = player.surface_index,
+        physical_surface = player.physical_surface_index,
+        zoom = player.zoom,
+        controller_type = player.controller_type,
+        character = player.character,
+        waypoint_count = #waypoints
+    }
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
         type = defines.controllers.cutscene,
@@ -11,10 +34,6 @@ local function set_cutscene_controller(waypoints, player)
         chart_mode_cutoff = 0.2,
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
-    storage.cc_status = storage.cc_status or {}
-    storage.cc_status[player.index] = "active"
-    storage.number_of_waypoints = storage.number_of_waypoints or {}
-    storage.number_of_waypoints[player.index] = #created_waypoints
 end
 
 ---@param train_id integer
@@ -198,8 +217,8 @@ script.on_event(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoin
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
-    if storage.cc_status and storage.cc_status[player_index] then
-        return storage.cc_status[player_index]
+    if storage.player_data and storage.player_data[player_index] then
+        return "active"
     end
 end
 
