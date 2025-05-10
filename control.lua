@@ -61,6 +61,15 @@ local function check_parameter_for_surface_mismatch(parameter, player)
             return true
         end
     end
+    if not (player_surface == "nauvis") then
+        if not string.find(parameter, "," .. player_surface) then
+            storage.mismatch_message_shown = storage.mismatch_message_shown or {}
+            if storage.mismatch_message_shown[player.index] then return true end
+            player.print({ "cc-messages.surface-mismatch", "[planet=" .. player_surface .. "]", "[color=" .. player.color.r .. "," .. player.color.g .. "," .. player.color.b .. "][Character: " .. player.name .. "][/color]", "[planet=nauvis]" })
+            storage.mismatch_message_shown[player.index] = true
+            return true
+        end
+    end
     return false
 end
 
