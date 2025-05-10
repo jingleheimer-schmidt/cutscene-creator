@@ -57,7 +57,7 @@ local function set_cutscene_controller(waypoints, player)
         start_position = player.position,
         start_zoom = storage.player_data[player_index].zoom,
         final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60,
-        chart_mode_cutoff = 0.2,
+        -- chart_mode_cutoff = 0.2,
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
 end
