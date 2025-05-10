@@ -15,7 +15,7 @@ Unless otherwise specified, cutscene creator will use the values set in player m
 To manually set those values for a given waypoint, add tags with the values you want after the waypoint:
 
 `transition <value>`  - The number of seconds it takes to get to the waypoint
-`wait <value>`        - The number of ticks to wait at the waypoint before going to the next one
+`wait <value>`        - The number of seconds to wait at the waypoint before going to the next one
 `zoom <value>`        - The zoom level when arriving at the waypoint
 
 You can also use shorthand for the tags: `t`, `w`, and `z`
