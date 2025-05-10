@@ -66,6 +66,7 @@ local function create_waypoints_from_string(parameter, player_index)
             if x and y then
                 x, y = tonumber(x), tonumber(y)
                 waypoint.position = { x = x, y = y }
+                waypoint.surface = surface or "nauvis"
             end
         elseif key == "train" then
             local train_id = tonumber(value)
@@ -73,6 +74,7 @@ local function create_waypoints_from_string(parameter, player_index)
                 local train = get_train_target(train_id)
                 if train then
                     waypoint.target = train
+                    waypoint.surface = train.surface.name
                 end
             end
         elseif key == "train-stop" then
@@ -81,6 +83,7 @@ local function create_waypoints_from_string(parameter, player_index)
                 local station = get_station_target(station_unit_number)
                 if station then
                     waypoint.target = station
+                    waypoint.surface = station.surface.name
                 end
             end
         end
