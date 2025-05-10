@@ -1,5 +1,5 @@
 
-local transitionTimeSetting = {
+local transition_time = {
     type = "double-setting",
     name = "cc-transition-time",
     setting_type = "runtime-per-user",
@@ -8,7 +8,7 @@ local transitionTimeSetting = {
     order = "cc-1"
 }
 
-local timeWaitSetting = {
+local wait_time = {
     type = "double-setting",
     name = "cc-time-wait",
     setting_type = "runtime-per-user",
@@ -17,7 +17,7 @@ local timeWaitSetting = {
     order = "cc-2"
 }
 
-local zoomSetting = {
+local zoom_level = {
     type = "double-setting",
     name = "cc-zoom",
     setting_type = "runtime-per-user",
@@ -28,7 +28,7 @@ local zoomSetting = {
 }
 
 data:extend({
-    transitionTimeSetting,
-    timeWaitSetting,
-    zoomSetting
+    transition_time,
+    wait_time,
+    zoom_level
 })
