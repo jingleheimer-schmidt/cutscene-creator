@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.0
-Date: ????
+Date: 2025-05-10
   Features:
     - cutscenes can now be started from remote view
     - cutscenes can now be shown for surfaces other than the one the player is physically on
