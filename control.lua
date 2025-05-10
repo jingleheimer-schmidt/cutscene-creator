@@ -1,19 +1,63 @@
 
----@param created_waypoints CutsceneWaypoint[]
+---@class player_data
+---@field position MapPosition
+---@field physical_position MapPosition
+---@field surface SurfaceIdentification
+---@field physical_surface SurfaceIdentification
+---@field zoom number
+---@field controller_type defines.controllers
+---@field character LuaEntity?
+---@field waypoint_count integer
+
+---@param waypoints CutsceneWaypoint[]
+---@return string
+local function get_intended_cutscene_surface(waypoints)
+    local surface_names = {}
+    for _, waypoint in pairs(waypoints) do
+        if waypoint.surface then
+            surface_names[waypoint.surface] = (surface_names[waypoint.surface] or 0) + 1
+        end
+    end
+    local max_count, surface_name = 0, "nauvis"
+    for name, count in pairs(surface_names) do
+        if count > max_count then
+            max_count = count
+            surface_name = name
+        end
+    end
+    return surface_name
+end
+
+---@param waypoints CutsceneWaypoint[]
 ---@param player LuaPlayer
-local function set_cutscene_controller(created_waypoints, player)
+local function set_cutscene_controller(waypoints, player)
+    local player_index = player.index
+    -- since cutscenes can't be created for players in remote view, stash their data in storage and temporarily set them to spectator
+    ---@type table<integer, player_data>
+    storage.player_data = storage.player_data or {}
+    storage.player_data[player_index] = {
+        position = player.position,
+        physical_position = player.physical_position,
+        surface = player.surface_index,
+        physical_surface = player.physical_surface_index,
+        zoom = player.zoom,
+        controller_type = player.controller_type,
+        character = player.character,
+        waypoint_count = #waypoints
+    }
+    player.set_controller { type = defines.controllers.spectator }
+    player.teleport(player.position, get_intended_cutscene_surface(waypoints), true)
+    player.zoom = storage.player_data[player_index].zoom
     local transfer_alt_mode = player.game_view_settings.show_entity_info
     player.set_controller {
         type = defines.controllers.cutscene,
-        waypoints = created_waypoints,
+        waypoints = waypoints,
         start_position = player.position,
-        final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]]
+        start_zoom = storage.player_data[player_index].zoom,
+        final_transition_time = math.floor(player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60),
+        -- chart_mode_cutoff = 0.2,
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
-    storage.cc_status = storage.cc_status or {}
-    storage.cc_status[player.index] = "active"
-    storage.number_of_waypoints = storage.number_of_waypoints or {}
-    storage.number_of_waypoints[player.index] = #created_waypoints
 end
 
 ---@param train_id integer
@@ -47,41 +91,56 @@ end
 ---@param player_index integer
 ---@return CutsceneWaypoint[]?
 local function create_waypoints_from_string(parameter, player_index)
-    -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38,nauvis]"
-    -- local parameter = "[gps=1,1][train=22]tt22 wt22 z.22[train-stop=333] tt300 wt333 z.333 [gps=4444,4444,nauvis][gps=55555,55555]   tt55555 wt55555 z0.55555"
+    -- local parameter = "[gps=51,37,nauvis][train=3841][train-stop=100][gps=53,38]"
+    -- local parameter = "[gps=1,1][train=22]t22 w22 z.22[train-stop=333] transition 300 wait 333 zoom 0.333 [gps=4444,4444,nauvis][gps=55555,55555]    z0.55555  wait55555 t55555  "
     local waypoints = {}
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
-    local tt = "transition_time=" .. player.mod_settings["cc-transition-time"].value
-    local wt = "time_to_wait=" .. player.mod_settings["cc-time-wait"].value
-    local z = "zoom=" .. player.mod_settings["cc-zoom"].value
-    parameter = parameter:gsub("%s*", ""):gsub("%[", "{"):gsub("%]", "}")
-    parameter = parameter:gsub("gps=", "position={")
-    parameter = parameter:gsub("train=", "target=get_train_target{")
-    parameter = parameter:gsub("train%-stop=", "target=get_station_target{")
-    parameter = parameter:gsub("tt", ",transition_time=")
-    parameter = parameter:gsub("wt", ",time_to_wait=")
-    parameter = parameter:gsub("z", ",zoom=")
-    parameter = parameter:gsub("%{position", "},{position")
-    parameter = parameter:gsub("%{target", "},{target")
-    parameter = parameter:gsub("%}%,", "", 1)
-    parameter = parameter:gsub("%}%{", "}}, {")
-    parameter = parameter .. "}"
-    parameter = parameter:gsub("%}%}", "}," .. tt .. "," .. wt .. "," .. z .. "}")
-    parameter = parameter:gsub("%{(%d*)%}", "(%1,player_index)")
-    local proc, errmsg = load('local waypoints={' .. parameter .. '} return waypoints', "bad_waypoints", "t",
-        { get_train_target = get_train_target, player_index = player_index, get_station_target = get_station_target })
-    if proc then
-        local status, result = pcall(proc)
-        if status then
-            waypoints = result
-            return waypoints
-        else
-            -- game.print("pcall failed: "..result)
+    local has_a_tag = parameter:find("%[.-]")
+    if not has_a_tag then player.print({ "cc-messages.invalid-no-waypoints" }) return end
+    local mod_settings = player.mod_settings
+    parameter = parameter:gsub("%s*", "") -- remove all whitespace
+    parameter = parameter .. "[" -- add a bracket to the end of the string for the final match
+    for key, value, options in parameter:gmatch("%[([^=]+)=([^%]]+)%]([^[]*)") do
+        key, value, options = tostring(key), tostring(value), tostring(options)
+        local waypoint = {}
+        if key == "gps" then
+            local x, y, surface = value:match("([^,]+),([^,]+),?(.*)")
+            if x and y then
+                x, y = tonumber(x), tonumber(y)
+                waypoint.position = { x = x, y = y }
+                waypoint.surface = (surface and surface ~= "") and surface or "nauvis"
+            end
+        elseif key == "train" then
+            local train_id = tonumber(value)
+            if train_id then
+                local train = get_train_target(train_id)
+                if train then
+                    waypoint.target = train
+                    waypoint.surface = train.surface.name
+                end
+            end
+        elseif key == "train-stop" then
+            local station_unit_number = tonumber(value)
+            if station_unit_number then
+                local station = get_station_target(station_unit_number)
+                if station then
+                    waypoint.target = station
+                    waypoint.surface = station.surface.name
+                end
+            end
         end
-    else
-        -- game.print("load failed: "..errmsg)
+        if waypoint.position or waypoint.target then
+            local transition = options:match("transition([%d%.]*)") or options:match("^t([%d%.]*)") or options:match("[^%a]t([%d%.]*)")
+            local wait = options:match("wait([%d%.]*)") or options:match("^w([%d%.]*)") or options:match("[^%a]w([%d%.]*)")
+            local zoom = options:match("zoom([%d%.]*)") or options:match("^z([%d%.]*)") or options:match("[^%a]z([%d%.]*)")
+            waypoint.transition_time = math.floor((transition and tonumber(transition) or mod_settings["cc-transition-time"].value) * 60)
+            waypoint.time_to_wait = math.floor((wait and tonumber(wait) or mod_settings["cc-time-wait"].value) * 60)
+            waypoint.zoom = zoom and tonumber(zoom) or mod_settings["cc-zoom"].value
+            table.insert(waypoints, waypoint)
+        end
     end
+    return waypoints
 end
 
 ---@param waypoint CutsceneWaypoint
@@ -93,7 +152,7 @@ local function validate_waypoint(waypoint)
     end
     local position = waypoint.position
     if position then
-        if (position[1] < -1000000 or position[1] > 1000000 or position[2] < -1000000 or position[2] > 1000000) then
+        if (position.x < -1000000 or position.x > 1000000 or position.y < -1000000 or position.y > 1000000) then
             return false, { "cc-messages.invalid-coordinates" }
         end
     end
@@ -104,6 +163,32 @@ local function validate_waypoint(waypoint)
         return false, { "cc-messages.invalid-no-wait-time" }
     end
     return true
+end
+
+---@param player LuaPlayer
+---@param player_data player_data
+local function reset_player_data(player, player_data)
+    player.teleport(player_data.physical_position, player_data.physical_surface, true)
+    local character = player_data.character
+    if character and character.valid then
+        player.set_controller {
+            type = defines.controllers.character,
+            character = character,
+        }
+    else
+        player.set_controller {
+            type = defines.controllers.ghost,
+        }
+    end
+    if not (player_data.controller_type == defines.controllers.character) then
+        player.set_controller {
+            type = player_data.controller_type,
+            position = player_data.position,
+            surface = player_data.surface,
+        }
+        player.zoom = player_data.zoom
+    end
+    storage.player_data[player.index] = nil
 end
 
 ---@param command CustomCommandData
@@ -134,26 +219,21 @@ local function play_cutscene(command)
         local status, result = pcall(set_cutscene_controller, created_waypoints, player)
         if not status then
             player.print({ "cc-messages.invalid-waypoints-error-message", result })
+            if storage.player_data and storage.player_data[player_index] then
+                reset_player_data(player, storage.player_data[player_index])
+            end
         end
     else
         player.print({ "cc-messages.invalid-waypoints" })
     end
 end
 
----@param command CustomCommandData
-local function end_cutscene(command)
-    local player = game.get_player(command.player_index)
+---@param event CustomCommandData | EventData.CustomInputEvent
+local function end_cutscene(event)
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then return end
-    if ((player.controller_type == defines.controllers.cutscene) and (storage.cc_status) and (storage.cc_status[command.player_index]) and (storage.cc_status[command.player_index] == "active")) then
+    if (player.controller_type == defines.controllers.cutscene) then
         player.exit_cutscene()
-        if storage.cc_status then
-            storage.cc_status[player.index] = "inactive"
-        end
-        if storage.number_of_waypoints then
-            storage.number_of_waypoints[player.index] = nil
-        end
-    else
-        -- player.print("No cutscene currently playing")
     end
 end
 
@@ -165,25 +245,25 @@ end
 script.on_init(add_commands)
 script.on_load(add_commands)
 
----@param event EventData.on_cutscene_waypoint_reached
-local function on_cutscene_waypoint_reached(event)
-    -- game.print("arrived at: waypoint " .. event.waypoint_index)
-    if storage.cc_status and storage.cc_status[event.player_index] and (storage.cc_status[event.player_index] == "active") then
-        -- game.print("cc_status is: " .. storage.cc_status[event.player_index])
-        if storage.number_of_waypoints and storage.number_of_waypoints[event.player_index] and (storage.number_of_waypoints[event.player_index] == event.waypoint_index) then
-            storage.cc_status[event.player_index] = "inactive"
-            storage.number_of_waypoints[event.player_index] = nil
-            -- game.print("cc_status set to: " .. storage.cc_status[event.player_index])
-        end
-    end
+script.on_event("toggle-map-cutscene-creator", end_cutscene)
+
+---@param event EventData.on_cutscene_finished | EventData.on_cutscene_cancelled
+local function on_cutscene_ended(event)
+    local player_index = event.player_index
+    local player = game.get_player(player_index)
+    if not (player and player.valid) then return end
+    storage.player_data = storage.player_data or {}
+    local player_data = storage.player_data[player_index]
+    if player_data then reset_player_data(player, player_data) end
 end
 
-script.on_event(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
+script.on_event(defines.events.on_cutscene_finished, on_cutscene_ended)
+script.on_event(defines.events.on_cutscene_cancelled, on_cutscene_ended)
 
 local interface_functions = {}
 interface_functions.cc_status = function(player_index)
-    if storage.cc_status and storage.cc_status[player_index] then
-        return storage.cc_status[player_index]
+    if storage.player_data and storage.player_data[player_index] then
+        return "active"
     end
 end
 

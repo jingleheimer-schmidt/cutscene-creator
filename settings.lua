@@ -1,34 +1,34 @@
 
-local transitionTimeSetting = {
-    type = "int-setting",
+local transition_time = {
+    type = "double-setting",
     name = "cc-transition-time",
     setting_type = "runtime-per-user",
-    minimum_value = 1,
-    default_value = 120,
+    minimum_value = 0,
+    default_value = 2,
     order = "cc-1"
 }
 
-local timeWaitSetting = {
-    type = "int-setting",
+local wait_time = {
+    type = "double-setting",
     name = "cc-time-wait",
     setting_type = "runtime-per-user",
-    minimum_value = 1,
-    default_value = 60,
+    minimum_value = 0,
+    default_value = 1,
     order = "cc-2"
 }
 
-local zoomSetting = {
+local zoom_level = {
     type = "double-setting",
     name = "cc-zoom",
     setting_type = "runtime-per-user",
-    minimum_value = .1,
+    minimum_value = 0,
     default_value = .75,
     maximum_value = 100,
     order = "cc-3"
 }
 
 data:extend({
-    transitionTimeSetting,
-    timeWaitSetting,
-    zoomSetting
+    transition_time,
+    wait_time,
+    zoom_level
 })
