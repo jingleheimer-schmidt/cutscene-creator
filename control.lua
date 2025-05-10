@@ -53,7 +53,7 @@ local function create_waypoints_from_string(parameter, player_index)
     local player = game.get_player(player_index)
     if not (player and player.valid) then return end
     local has_a_tag = parameter:find("%[.-]")
-    if not has_a_tag then player.print({ "cc-messages.invalid-no-waypoints" }) end
+    if not has_a_tag then player.print({ "cc-messages.invalid-no-waypoints" }) return end
     local mod_settings = player.mod_settings
     parameter = parameter:gsub("%s*", "") -- remove all whitespace
     parameter = parameter .. "[" -- add a bracket to the end of the string for the final match
