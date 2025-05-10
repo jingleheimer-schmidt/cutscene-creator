@@ -56,7 +56,7 @@ local function set_cutscene_controller(waypoints, player)
         waypoints = waypoints,
         start_position = player.position,
         start_zoom = storage.player_data[player_index].zoom,
-        final_transition_time = player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60,
+        final_transition_time = math.floor(player.mod_settings["cc-transition-time"].value --[[@as integer]] * 60),
         -- chart_mode_cutoff = 0.2,
     }
     player.game_view_settings.show_entity_info = transfer_alt_mode
@@ -136,8 +136,8 @@ local function create_waypoints_from_string(parameter, player_index)
             local transition = options:match("transition([%d%.]*)") or options:match("^t([%d%.]*)") or options:match("[^%a]t([%d%.]*)")
             local wait = options:match("wait([%d%.]*)") or options:match("^w([%d%.]*)") or options:match("[^%a]w([%d%.]*)")
             local zoom = options:match("zoom([%d%.]*)") or options:match("^z([%d%.]*)") or options:match("[^%a]z([%d%.]*)")
-            waypoint.transition_time = (transition and tonumber(transition) or mod_settings["cc-transition-time"].value) * 60
-            waypoint.time_to_wait = (wait and tonumber(wait) or mod_settings["cc-time-wait"].value) * 60
+            waypoint.transition_time = math.floor((transition and tonumber(transition) or mod_settings["cc-transition-time"].value) * 60)
+            waypoint.time_to_wait = math.floor((wait and tonumber(wait) or mod_settings["cc-time-wait"].value) * 60)
             waypoint.zoom = zoom and tonumber(zoom) or mod_settings["cc-zoom"].value
             table.insert(waypoints, waypoint)
         end
