@@ -15,9 +15,7 @@ local function get_intended_cutscene_surface(waypoints)
     local surface_names = {}
     for _, waypoint in pairs(waypoints) do
         if waypoint.surface then
-            if waypoint.surface then
-                surface_names[waypoint.surface] = (surface_names[waypoint.surface] or 0) + 1
-            end
+            surface_names[waypoint.surface] = (surface_names[waypoint.surface] or 0) + 1
         end
     end
     local max_count, surface_name = 0, "nauvis"
